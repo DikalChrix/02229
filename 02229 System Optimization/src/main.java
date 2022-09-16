@@ -16,7 +16,7 @@ public class main {
 	
 	public static void readTestCases() throws Exception {
 	
-		List<testFormat> data = new ArrayList<testFormat>();
+		ArrayList<testFormat> data = new ArrayList<testFormat>();
 		Scanner sc = new Scanner(new File("C:\\Users\\kicc7\\Downloads\\test cases\\test cases\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv"));  
 		sc.useDelimiter(",");   //sets the delimiter pattern  
 		
@@ -45,6 +45,9 @@ public class main {
 			System.out.print(data.get(i).getPriority());
 			System.out.println(data.get(i).getDeadline());
 		}
+		
+		EDFAlgorithm test = new EDFAlgorithm();
+		test.testAlgorithm(data);
 		
 		}  
 		
