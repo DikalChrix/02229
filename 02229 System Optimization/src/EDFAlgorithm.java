@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class EDFAlgorithm {
@@ -21,12 +22,13 @@ public class EDFAlgorithm {
 			}
 			// Setup
 			periodArray[i] = tasks.get(i).getPeriod();
-			t = lcmMultiple(periodArray);
 			//Shallow copy to readylist here, have to check if deep copy is needed
 			readyList = (ArrayList<testFormat>) tasks.clone();
 			// Schedule is initially just a integer list with numbers, where each number represents what job ran in that specific tick(index):
 		}
 
+		//System.out.println(Arrays.toString(periodArray));
+		t = lcmMultiple(periodArray);
 		String[] schedule = new String[t];
 		
 		int wcrt = 0;
@@ -72,6 +74,7 @@ public class EDFAlgorithm {
 	}
 
 	public int lcmMultiple(int[] numbers) {
+		System.out.println(Arrays.toString(numbers));
 		int res = numbers[0];
 		for(int i=1; i<numbers.length-1; i++) {
 			res = gcdPair(res, numbers[i]);
@@ -80,9 +83,11 @@ public class EDFAlgorithm {
 		int mul = numbers[0];
 		for(int i=1; i<numbers.length-2;i++) {
 			mul = mul * numbers[i];
+			System.out.println("Mul in loop: "+mul);
 		}
 		
-		//TODO: Figure out why there is division by zero and fix
+		//TODO: Can't multiply that many numbers together, find another solution to calculate lcm of multiple integers
+		/*
 		if(res==0) {
 			res = 1;
 		}
@@ -90,6 +95,11 @@ public class EDFAlgorithm {
 		if(mul==0) {
 			mul = 1;
 		}
+		
+		*/
+		
+		System.out.println("Mul: "+mul);
+		System.out.println("Res: "+res);
 		
 		
 		return (numbers[numbers.length-1]/mul*res);

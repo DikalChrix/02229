@@ -35,16 +35,26 @@ public class main {
 		}   
 		sc.close();  //closes the scanner  
 		
+		
+		removeET(data);
+		
+		
+		/*
 		System.out.println("Data size:"+data.size());
+		
+		
 		
 		for(int i=0; i<data.size(); i++) {
 			System.out.print(data.get(i).getName());
-			System.out.print(data.get(i).getDuration());
-			System.out.print(data.get(i).getPeriod());
-			System.out.print(data.get(i).getType());
-			System.out.print(data.get(i).getPriority());
+			System.out.print(data.get(i).getDuration()+" ");
+			System.out.print(data.get(i).getPeriod()+" ");
+			System.out.print(data.get(i).getType()+" ");
+			System.out.print(data.get(i).getPriority()+" ");
 			System.out.println(data.get(i).getDeadline());
 		}
+		
+		System.out.println(data.get(39).getType());
+		*/
 		
 		EDFAlgorithm test = new EDFAlgorithm();
 		test.testAlgorithm(data);
@@ -52,6 +62,17 @@ public class main {
 		}  
 		
 		
+	public static void removeET(ArrayList<testFormat> tasks) {
+		int counter = 0; //Each time we remove an element, the array becomes shorter
+		int n = tasks.size();
+		for(int i=0; i<n; i++) {
+			if(tasks.get(i-counter).getType().equals("ET")) {
+				tasks.remove(i-counter);
+				counter++;
+			}
+		}
+		
+	}
 		
 	}
 
