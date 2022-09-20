@@ -14,8 +14,8 @@ public class main {
 		
 		dataHandler.removeET(data);
 		
-		//test.testAlgorithm(data);
-		//System.out.println("Test");
+		test.testAlgorithm(data);
+		System.out.println("Test");
 		
 	}  
 		

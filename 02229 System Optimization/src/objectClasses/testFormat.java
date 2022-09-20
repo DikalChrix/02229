@@ -20,6 +20,12 @@ public class testFormat implements Comparable {
 		this.startTick = -1;
 		this.responseTime = -1;
 	}
+	
+	@Override
+	public testFormat clone() {
+		testFormat t = new testFormat(this.name, this.duration, this.period, this.type, this.priority, this.deadline);
+		return t;
+	}
 
 	public String getName() {
 		return name;
