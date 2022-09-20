@@ -1,6 +1,9 @@
+package algos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+
+import objectClasses.testFormat;
 
 public class EDFAlgorithm {
 	

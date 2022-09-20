@@ -1,3 +1,4 @@
+package objectClasses;
 
 public class testFormat implements Comparable {
 	private String name;
