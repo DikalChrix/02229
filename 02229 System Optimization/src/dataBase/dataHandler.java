@@ -13,10 +13,10 @@ public class dataHandler {
 		try {
 			sc = new Scanner(new File("src\\dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv"));
 			sc.useDelimiter(",");   //sets the delimiter pattern  
-			
+
 			String split = sc.nextLine();		
 			
-			while (sc.hasNext())  //returns a boolean value  
+			while (sc.hasNextLine())  //returns a boolean value  
 			{  
 				split = sc.nextLine();
 				
@@ -25,9 +25,8 @@ public class dataHandler {
 				testFormat test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]));
 				
 				data.add(test1);
-				sc.close();  //closes the scanner 
-				
-			}   
+			}
+			sc.close();  //closes the scanner 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
