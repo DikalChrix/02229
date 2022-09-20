@@ -26,7 +26,7 @@ public class dataHandler {
 				
 				data.add(test1);
 			}
-			sc.close();  //closes the scanner 
+			sc.close();  //closes the scanner
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
