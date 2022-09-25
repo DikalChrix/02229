@@ -13,7 +13,7 @@ public class EDFAlgorithm {
 		
 		int n = tasks.size();
 		int t=0;
-		ArrayList<testFormat> readyList = null;
+		ArrayList<testFormat> readyList = new ArrayList<testFormat>();
 		int[] periodArray = new int[tasks.size()];
 		for(int i=0; i<n; i++) {
 			// Check that input data is valid
@@ -25,27 +25,56 @@ public class EDFAlgorithm {
 			// Setup
 			periodArray[i] = tasks.get(i).getPeriod();
 			//Shallow copy to readylist here, have to check if deep copy is needed TODO: Deep copy
-			for(testFormat x : tasks) {
-				readyList.add(x.clone());
-			}
+		
+		
+			
 			//readyList = (ArrayList<testFormat>) tasks.clone();
 			// Schedule is initially just a integer list with numbers, where each number represents what job ran in that specific tick(index):
+		
 		}
-
+		//readyList.addAll(tasks);
+		
+		
+		System.out.print("\n ReadyList before loop: ");
+		printJobsListName(readyList);
+		
+		for(testFormat x : tasks) {
+			readyList.add(x.clone());
+		}
+		
 		//System.out.println(Arrays.toString(periodArray));
 		t = lcmMultiple(periodArray);
 		String[] schedule = new String[t];
 		
 		int wcrt = 0;
 		
+		
+		//System.out.print("\n ReadyList before loop: ");
+		//printJobsListName(readyList);
+		
 		// Simulation
 		testFormat currJob = null;
 		for(int tick = 1;tick<t; tick++) {
 			// Check if new job has been released:
 			readyList = getReady(tasks, readyList, tick);
+			
+			System.out.print("\n ReadyList at start of cycle "+tick+": ");
+			printJobsListName(readyList);
+			/*
+			if (tick==4100) {
+				System.exit(0);
+			}
+			*/
+			
+			
 			if(readyList.size()==0) {
 				continue;
 			}
+			
+			//System.out.print("\n ReadyList when initial tasks have been added: ");
+			//printJobsListName(readyList);
+			
+			
 			// Pick task with earliest deadline
 			currJob = pickEarliestTask(readyList);
 			// If this is the first time the task is worked on, set the start tick
@@ -55,10 +84,9 @@ public class EDFAlgorithm {
 			schedule[tick] = currJob.getName();
 			// Decrement execution time of current task
 			currJob.setDuration(currJob.getDuration()-1);
-			System.out.println("Current duration: "+currJob.getDuration()+"\t Name: "+currJob.getName());
-			
-			
-			
+			//System.out.println("Current duration: "+currJob.getDuration()+"\t Name: "+currJob.getName());
+			System.out.print(" Working on: "+currJob.getName()+", ticks remaining: "+currJob.getDuration());
+						
 			if(currJob.getDuration() == 0) {
 				// Calculate response time
 				currJob.setResponseTime(tick - currJob.getStartTick());
@@ -70,8 +98,6 @@ public class EDFAlgorithm {
 				//System.out.println("Check");
 				readyList.remove(taskIndex);
 			}
-			//System.out.println("ReadyList at cycle "+tick+": ");
-			//printJobsListName(readyList);
 		}
 			
 	}
@@ -137,7 +163,7 @@ public class EDFAlgorithm {
 		
 		for(int i=0; i<tasks.size(); i++) {
 			if(tick % tasks.get(i).getPeriod() == 0) {
-				currReadyList.add(tasks.get(i)); // TODO: Need deep copy
+				currReadyList.add(tasks.get(i).clone()); // TODO: Need deep copy
 			}
 		}
 		
@@ -168,7 +194,7 @@ public class EDFAlgorithm {
 	public void printJobsListName(ArrayList<testFormat> list) {
 		
 		for(int i=0; i<list.size();i++) {
-			System.out.println(list.get(i).getName());
+			System.out.print(list.get(i).getName()+"; ");
 		}
 		
 	}

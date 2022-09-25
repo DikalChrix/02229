@@ -1,6 +1,8 @@
 package objectClasses;
 
-public class testFormat implements Comparable {
+import java.io.Serializable;
+
+public class testFormat implements Comparable, Cloneable, Serializable {
 	private String name;
 	private int duration;
 	private int priority;
@@ -23,8 +25,11 @@ public class testFormat implements Comparable {
 	
 	@Override
 	public testFormat clone() {
-		testFormat t = new testFormat(this.name, this.duration, this.period, this.type, this.priority, this.deadline);
-		return t;
+		try {
+			return (testFormat) super.clone();
+		}catch (CloneNotSupportedException e) {
+			return new testFormat(this.name, this.duration, this.period, this.type, this.priority, this.deadline);
+		}
 	}
 
 	public String getName() {
