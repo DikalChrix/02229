@@ -9,7 +9,7 @@ public class EDFAlgorithm {
 	
 	int taskIndex = -1; //Remember index in of current job in readyList
 	
-	public void testAlgorithm(ArrayList<testFormat> tasks) {
+	public void algorithm(ArrayList<testFormat> tasks) {
 		
 		int n = tasks.size();
 		int t=0;

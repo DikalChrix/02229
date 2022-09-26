@@ -34,15 +34,26 @@ public class dataHandler {
 		return data;
 	}
 	
-	public void removeET(ArrayList<testFormat> tasks) {
-		int counter = 0; //Each time we remove an element, the array becomes shorter
+	public ArrayList<ArrayList<testFormat>> seperateTasks(ArrayList<testFormat> tasks) {
+		
+		ArrayList<testFormat> timeTasks = new ArrayList<testFormat>();
+		ArrayList<testFormat> eventTasks = new ArrayList<testFormat>();
+		
 		int n = tasks.size();
 		for(int i=0; i<n; i++) {
-			if(tasks.get(i-counter).getType().equals("ET")) {
-				tasks.remove(i-counter);
-				counter++;
+			if(tasks.get(i).getType().equals("TT")) {
+				timeTasks.add(tasks.get(i).clone());
 			}
+			else {
+				eventTasks.add(tasks.get(i).clone());
+			}
+			//tasks.remove(i-counter);
+			//counter++;
 		}
 		
+		ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
+		result.add(timeTasks);
+		result.add(eventTasks);
+		return result;	
 	}
 }
