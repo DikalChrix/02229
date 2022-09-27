@@ -16,7 +16,8 @@ public class EDPAlgorithm {
 		//Setup
 		EDFAlgorithm edfAlgorithm = new EDFAlgorithm();
 		int delta = pollingPeriod + pollingDeadline - 2* pollingBudget;
-		int alpha = pollingBudget/pollingPeriod; //Long for fractions?
+		double alpha = (double) pollingBudget/ (double) pollingPeriod; //Long for fractions?
+		System.out.println("Aplha: "+alpha);
 		int n = tasks.size();
 		EDPTuple result = new EDPTuple(false, 0);
 			
@@ -42,7 +43,7 @@ public class EDPAlgorithm {
 			responseTime = x.getDeadline()+1;
 			
 			while(tick<=hyperPeriod) {
-				int supply = alpha*(tick-delta);
+				double supply = alpha*(tick-delta);
 				double demand = 0;
 				
 				//Get list of tasks with larger period than current x

@@ -9,7 +9,7 @@ public class EDFAlgorithm {
 	
 	int taskIndex = -1; //Remember index in of current job in readyList
 	
-	public void algorithm(ArrayList<testFormat> tasks) {
+	public int algorithm(ArrayList<testFormat> tasks) {
 		
 		int n = tasks.size();
 		int t=0;
@@ -19,7 +19,7 @@ public class EDFAlgorithm {
 			// Check that input data is valid
 			if (!(tasks.get(i).getType().equals("TT"))) {
 				System.out.println("EDF Algorithm was called with one ET Task");
-				return;
+				return -1;
 				
 			}
 			// Setup
@@ -54,6 +54,9 @@ public class EDFAlgorithm {
 		
 		// Simulation
 		testFormat currJob = null;
+		int minIdlePeriod = Integer.MAX_VALUE;
+		int currIdlePeriod = 0;
+		boolean idlePeriod = false;
 		for(int tick = 1;tick<t; tick++) {
 			// Check if new job has been released:
 			readyList = getReady(tasks, readyList, tick);
@@ -68,7 +71,17 @@ public class EDFAlgorithm {
 			
 			
 			if(readyList.size()==0) {
+				currIdlePeriod++;
+				idlePeriod = true;
 				continue;
+			}
+			
+			else if (idlePeriod)  {
+				if (currIdlePeriod<minIdlePeriod) {
+					minIdlePeriod = currIdlePeriod;
+				}
+				currIdlePeriod = 0;
+				idlePeriod = false;
 			}
 			
 			//System.out.print("\n ReadyList when initial tasks have been added: ");
@@ -100,6 +113,7 @@ public class EDFAlgorithm {
 			}
 		}
 			
+		return minIdlePeriod;
 	}
 	
 	

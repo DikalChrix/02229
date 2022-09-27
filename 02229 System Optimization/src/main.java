@@ -24,10 +24,11 @@ public class main {
 		eventTasks = seperatedTasks.get(1);
 		
 		
-		//runEDF.algorithm(timeTasks);
+		int minIdlePeriod = runEDF.algorithm(timeTasks);
 		//TODO: Other parameters for EDP has been manually inserted according to runs of EDF, should be done dynamically.
 		//TODO: Maybe calculate smallest idle time when running EDP, so we know the max amount of time we have for polling servers each period. 
-		EDPTuple result =runEDP.algorithm(602, 600, 300, eventTasks);
+		System.out.println("Minimum idle period: "+minIdlePeriod);
+		EDPTuple result =runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks);
 		System.out.println("EDP result: "+result.isResult()+" ResponseTime: "+result.getResponseTime());
 		
 	}  
