@@ -16,8 +16,10 @@ public class EDPAlgorithm {
 		//Setup
 		EDFAlgorithm edfAlgorithm = new EDFAlgorithm();
 		int delta = pollingPeriod + pollingDeadline - 2* pollingBudget;
+		//System.out.println("Delta: "+delta);
+		
 		double alpha = (double) pollingBudget/ (double) pollingPeriod; //Long for fractions?
-		System.out.println("Aplha: "+alpha);
+		//System.out.println("Aplha: "+alpha);
 		int n = tasks.size();
 		EDPTuple result = new EDPTuple(false, 0);
 			
@@ -34,8 +36,8 @@ public class EDPAlgorithm {
 		}
 		
 		int hyperPeriod = edfAlgorithm.lcmMultiple(periodArray);
-		System.out.println("EDP hyperPeriod: "+hyperPeriod);
-		int responseTime = 0;
+		//System.out.println("EDP hyperPeriod: "+hyperPeriod);
+		int responseTime = -1;
 		
 		
 		for(testFormat x : tasks) {
