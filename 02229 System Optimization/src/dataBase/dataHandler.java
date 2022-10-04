@@ -11,7 +11,7 @@ public class dataHandler {
 		ArrayList<testFormat> data = new ArrayList<testFormat>();
 		Scanner sc;
 		try {
-			sc = new Scanner(new File("src\\dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv"));
+			sc = new Scanner(new File("src\\dataBase\\test_separation\\test_separation.csv"));
 			sc.useDelimiter(",");   //sets the delimiter pattern  
 
 			String split = sc.nextLine();		
@@ -20,9 +20,13 @@ public class dataHandler {
 			{  
 				split = sc.nextLine();
 				
-				String[] splitString = split.split(";");
+				if (split.length() < 10) {
+					break;
+				}
+				System.out.println(split);
+				String[] splitString = split.split(",");
 				
-				testFormat test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]));
+				testFormat test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]), Integer.parseInt(splitString[7]));
 				
 				data.add(test1);
 			}

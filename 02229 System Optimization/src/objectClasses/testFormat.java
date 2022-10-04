@@ -9,16 +9,18 @@ public class testFormat implements Comparable, Cloneable, Serializable {
 	private String type;
 	private int period;
 	private int deadline;
+	private int separation;
 	private int startTick;
 	private int responseTime;
 	
-	public testFormat(String Name, int Duration, int Period, String Type, int Priority, int Deadline) {
+	public testFormat(String Name, int Duration, int Period, String Type, int Priority, int Deadline, int separation) {
 		this.setName(Name);
 		this.setDuration(Duration);
 		this.setPriority(Priority);
 		this.setType(Type);
 		this.setPeriod(Period);
 		this.setDeadline(Deadline);
+		this.setSeparation(separation);
 		this.startTick = -1;
 		this.responseTime = -1;
 	}
@@ -28,7 +30,7 @@ public class testFormat implements Comparable, Cloneable, Serializable {
 		try {
 			return (testFormat) super.clone();
 		}catch (CloneNotSupportedException e) {
-			return new testFormat(this.name, this.duration, this.period, this.type, this.priority, this.deadline);
+			return new testFormat(this.name, this.duration, this.period, this.type, this.priority, this.deadline, this.separation);
 		}
 	}
 
@@ -94,6 +96,14 @@ public class testFormat implements Comparable, Cloneable, Serializable {
 
 	public int getResponseTime() {
 		return responseTime;
+	}
+	
+	public void setSeparation(int separation) {
+		this.separation = separation; 
+	}
+	
+	public int getSeparation() {
+		return separation;
 	}
 
 	@Override
