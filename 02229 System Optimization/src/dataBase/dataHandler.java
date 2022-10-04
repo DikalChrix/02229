@@ -12,9 +12,13 @@ public class dataHandler {
 		Scanner sc;
 		try {
 			sc = new Scanner(new File("src\\dataBase\\test_separation\\test_separation.csv"));
-			sc.useDelimiter(",");   //sets the delimiter pattern  
-
-			String split = sc.nextLine();		
+			sc.useDelimiter(",");   //sets the delimiter pattern
+			testFormat test1 = new testFormat();
+			int separationFlag = 0;
+			String split = sc.nextLine();
+			if (split.contains("separation")) {
+				separationFlag = 1;
+			}
 			
 			while (sc.hasNextLine())  //returns a boolean value  
 			{  
@@ -25,8 +29,13 @@ public class dataHandler {
 				}
 				System.out.println(split);
 				String[] splitString = split.split(";");
-				
-				testFormat test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]), Integer.parseInt(splitString[7]));
+				if (separationFlag == 1) {
+					test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]), Integer.parseInt(splitString[7]));
+					
+				} else  {
+					test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]), 0);
+					
+				}
 				
 				data.add(test1);
 			}

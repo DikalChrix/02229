@@ -25,6 +25,10 @@ public class testFormat implements Comparable, Cloneable, Serializable {
 		this.responseTime = -1;
 	}
 	
+	public testFormat() {
+		
+	}
+
 	@Override
 	public testFormat clone() {
 		try {
