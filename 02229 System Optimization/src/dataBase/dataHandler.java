@@ -19,12 +19,12 @@ public class dataHandler {
 			while (sc.hasNextLine())  //returns a boolean value  
 			{  
 				split = sc.nextLine();
-				
+				split = split.replace(",",";");
 				if (split.length() < 10) {
 					break;
 				}
 				System.out.println(split);
-				String[] splitString = split.split(",");
+				String[] splitString = split.split(";");
 				
 				testFormat test1 = new testFormat(splitString[1], Integer.parseInt(splitString[2]), Integer.parseInt(splitString[3]), splitString[4], Integer.parseInt(splitString[5]), Integer.parseInt(splitString[6]), Integer.parseInt(splitString[7]));
 				
