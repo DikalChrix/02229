@@ -5,13 +5,15 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import objectClasses.testFormat;
 
+//Class for handling the raw testdata (csv-files)
 public class dataHandler {
 	
+	// Function to read testdata from the csv-files and return them as an arraylist of the testformat, e.g. the data structure for our tasks
 	public ArrayList<testFormat> readTestData () {
 		ArrayList<testFormat> data = new ArrayList<testFormat>();
 		Scanner sc;
 		try {
-			sc = new Scanner(new File("src\\dataBase\\test_separation\\test_separation.csv"));
+			sc = new Scanner(new File("src\\dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv"));
 			sc.useDelimiter(",");   //sets the delimiter pattern
 			testFormat test1 = new testFormat();
 			int separationFlag = 0;
@@ -47,6 +49,7 @@ public class dataHandler {
 		return data;
 	}
 	
+	// Seperates the tasks into event and time tasks
 	public ArrayList<ArrayList<testFormat>> seperateTasks(ArrayList<testFormat> tasks) {
 		
 		ArrayList<testFormat> timeTasks = new ArrayList<testFormat>();
@@ -60,8 +63,6 @@ public class dataHandler {
 			else {
 				eventTasks.add(tasks.get(i).clone());
 			}
-			//tasks.remove(i-counter);
-			//counter++;
 		}
 		
 		ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();

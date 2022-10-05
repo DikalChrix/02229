@@ -19,18 +19,10 @@ public class EDFAlgorithm {
 			// Check that input data is valid
 			if (!(tasks.get(i).getType().equals("TT"))) {
 				System.out.println("EDF Algorithm was called with one ET Task");
-				return -1;
-				
+				return -1;	
 			}
 			// Setup
 			periodArray[i] = tasks.get(i).getPeriod();
-			//Shallow copy to readylist here, have to check if deep copy is needed TODO: Deep copy
-		
-		
-			
-			//readyList = (ArrayList<testFormat>) tasks.clone();
-			// Schedule is initially just a integer list with numbers, where each number represents what job ran in that specific tick(index):
-		
 		}
 		//readyList.addAll(tasks);
 		

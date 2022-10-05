@@ -15,23 +15,26 @@ public class main {
 		EDFAlgorithm runEDF = new EDFAlgorithm();
 		EDPAlgorithm runEDP = new EDPAlgorithm();
 		
+		// Reads the data from the csv files
 		ArrayList<testFormat> mixedTasks = new ArrayList<testFormat>();
 		mixedTasks = dataHandler.readTestData();
 		
+		// Seperates event and time taksks from each other
 		ArrayList<ArrayList<testFormat>> seperatedTasks = new ArrayList<ArrayList<testFormat>>();
 		ArrayList<testFormat> timeTasks = new ArrayList<testFormat>();
 		ArrayList<testFormat> eventTasks = new ArrayList<testFormat>();
-		
 		seperatedTasks = dataHandler.seperateTasks(mixedTasks);
 		timeTasks = seperatedTasks.get(0);
 		eventTasks = seperatedTasks.get(1);
 		
-		
+		// Runs the EDF algorithm to schedule time tasks. Returns the minmum idle period per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
 		int minIdlePeriod = runEDF.algorithm(timeTasks);
 		//TODO: Other parameters for EDP has been manually inserted according to runs of EDF, should be done dynamically.
 		//TODO: Maybe calculate smallest idle time when running EDP, so we know the max amount of time we have for polling servers each period.
 		//Delta is period where supply is negative/null, so time is reserved for TT tasks.
 		System.out.println("Minimum idle period: "+minIdlePeriod);
+		
+		// Runs EPD algorithm once
 		EDPTuple result =runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks);
 		System.out.println("EDP result: "+result.isResult()+" ResponseTime: "+result.getResponseTime());
 		
@@ -47,10 +50,10 @@ public class main {
 		//resultArray = optimizeAlgo.optimizeBoth(minIdlePeriod, 12000, eventTasks, 25, 1000);
 		//System.out.println("Optimal Period: "+resultArray[0]+" Optimal Deadline: "+resultArray[1]+" Best ResponseTime: "+resultArray[2]);
 	
-		//Testing simulated annealing:
-		int midSearchSpace = (12000 - minIdlePeriod)/2;
-		int[] initialSolution = {minIdlePeriod, midSearchSpace, midSearchSpace};
-		int[] testRes = optimizeAlgo.simulatedAnnealing(initialSolution, 1000, 0.99, eventTasks);
+		//Testing simulated Annealing:
+		int midSearchSpace = (12000 - minIdlePeriod)/2; // Find the middle of the search space and use as starting parameters
+		int[] initialSolution = {minIdlePeriod, minIdlePeriod, minIdlePeriod}; //  
+		int[] testRes = optimizeAlgo.simulatedAnnealing(initialSolution, 100000, 0.999, eventTasks);
 		System.out.println("Best parameters with Simulated Annealing: Budget "+testRes[0]+" Period: "+testRes[1]+" Deadline "+testRes[2]);
 	
 	}  

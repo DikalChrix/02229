@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import objectClasses.EDPTuple;
 import objectClasses.testFormat;
 import java.util.Random;
+import java.time.Duration;
+import java.time.Instant;
 
 public class OptimizationAlgorithm {
 
@@ -61,7 +63,7 @@ public class OptimizationAlgorithm {
 		
 		//Pick random parameter to change
 		Random rand = new Random();
-		int choice = (int) rand.nextInt(2);
+		int choice = (int) rand.nextInt(3);
 		
 		//Pick to either increment or decrement
 		int operation = (int) rand.nextInt(1);
@@ -69,28 +71,40 @@ public class OptimizationAlgorithm {
 		int[] resArray = {budget, period, deadline};
 		switch(choice) {
 			case 0: //Change budget
-				if(operation == 0) {
+				if(operation == 0 && budget!=1) {
 					res = budget -1;
-				} else {
+				} else if (operation == 1 && budget<period) {
 					res = budget +1;
+				} else if (operation == 0)  {
+					res = budget +1;
+				} else {
+					res = budget -1;
 				}
 				resArray[0] = res;
 				return resArray;
 			case 1: //Change period
-				if(operation == 0) {
+				if(operation == 0 && period!=1 && deadline<period && budget<period) {
 					res = period -1;
-				} else {
+				} else if (operation == 1 && period<12000) { //Hyperperiod
 					res = period +1;
+				} else if (operation == 0)  {
+					res = period +1;
+				} else {
+					res = period -1;
 				}
 				resArray[1] = res;
 				return resArray;
 			case 2: //Change deadline
-				if(operation == 0) {
+				if(operation == 0 && deadline!=1) {
 					res = deadline -1;
-				} else {
+				} else if (operation == 1 && deadline<period) {
 					res = deadline +1;
+				} else if (operation == 0)  {
+					res = deadline +1;
+				} else {
+					res = deadline -1;
 				}
-				resArray[0] = res;
+				resArray[2] = res;
 				return resArray;
 		}
 		return resArray;		
@@ -98,29 +112,58 @@ public class OptimizationAlgorithm {
 	
 	public int[] simulatedAnnealing(int[] initialSolution, int Tstart, double alpha, ArrayList<testFormat> eventTasks) {
 		
+		
+		Instant startTime = Instant.now();
+		
 		double t = Tstart;
 		int delta = 0;
 		EDPAlgorithm runEDP = new EDPAlgorithm();
 		
+		//Test WCRT of initial solution:
+		EDPTuple resultInitial = runEDP.algorithm(initialSolution[0], initialSolution[1], initialSolution[2], eventTasks);
+		
+		int solutionResponseTime = resultInitial.getResponseTime();
+		int[] bestCorrectSolution = initialSolution;
+		int bestCorrectResponseTime = resultInitial.getResponseTime();
+		
+		System.out.println("Initial WCRT: "+solutionResponseTime);
+		
 		while(t>0.01) {
 			int[] neighbour = generateNeighbour(initialSolution[0], initialSolution[1], initialSolution[2]);
-			//Test WCRT of initial solution:
-			EDPTuple resultInitial = runEDP.algorithm(initialSolution[0], initialSolution[1], initialSolution[2], eventTasks);
+					
 			
 			//Test WCRT of neighbour solution: 
-			EDPTuple resultNeighbour = runEDP.algorithm(initialSolution[0], initialSolution[1], initialSolution[2], eventTasks);
+			EDPTuple resultNeighbour = runEDP.algorithm(neighbour[0], neighbour[1], neighbour[2], eventTasks);
+			
+			System.out.println("Neighbour parameters: "+neighbour[0]+" "+neighbour[1]+" "+neighbour[2]);
 			
 			delta = resultInitial.getResponseTime() - resultNeighbour.getResponseTime(); // If delta is positive, the Neighbour is a better solution
 			
 			if( delta>0 || probabilityFunc(delta, t) ) {
 				initialSolution = neighbour;
+				solutionResponseTime = resultNeighbour.getResponseTime();
+				resultInitial = resultNeighbour;
+				
+				if(resultNeighbour.isResult()) {
+					bestCorrectSolution = neighbour;
+					bestCorrectResponseTime = resultNeighbour.getResponseTime();
+					System.out.println("Current best, correct Response time: "+bestCorrectResponseTime);
+				}
+				
+				
 			}
 			t = t*alpha; //Change of temperature for each round
 			
 			System.out.println("Temperature: "+t);
 		}
 		
-		return initialSolution;
+		System.out.println("Best WCRT with Simulated Annealing: "+bestCorrectResponseTime);
+		
+		Instant endTime = Instant.now();
+		
+		System.out.println("Simulated Annealing duration: "+Duration.between(startTime,endTime).toMinutes()+" minutes");
+		
+		return bestCorrectSolution;
 		
 	}
 
@@ -138,4 +181,12 @@ public class OptimizationAlgorithm {
 		
 	}
 	
+	public boolean checkParameterConstraints(int[] parameters) {
+		
+		if(parameters[1]>=parameters[0] && parameters[1]>=parameters[2]) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
