@@ -7,6 +7,8 @@ import dataBase.dataHandler;
 import objectClasses.EDPTuple;
 import objectClasses.testFormat;
 
+//Test
+
 public class main {
 	public static void main(String[] args) throws Exception {
 		dataHandler dataHandler = new dataHandler();
@@ -40,11 +42,16 @@ public class main {
 		//int[] resultArray = new int[2];
 		//resultArray = optimizeAlgo.optimizePollingPeriod(minIdlePeriod, minIdlePeriod, 12000, eventTasks);
 		//System.out.println("OptimalPollingPeriod: "+resultArray[1]+" Best ReponseTime"+resultArray[0]);
-		int[] resultArray = new int[3];
-		resultArray = optimizeAlgo.optimizeBoth(minIdlePeriod, 12000, eventTasks, 25, 1000);
-		System.out.println("Optimal Period: "+resultArray[0]+" Optimal Deadline: "+resultArray[1]+" Best ResponseTime: "+resultArray[2]);
+		
+		//int[] resultArray = new int[3];
+		//resultArray = optimizeAlgo.optimizeBoth(minIdlePeriod, 12000, eventTasks, 25, 1000);
+		//System.out.println("Optimal Period: "+resultArray[0]+" Optimal Deadline: "+resultArray[1]+" Best ResponseTime: "+resultArray[2]);
 	
-	
+		//Testing simulated annealing:
+		int midSearchSpace = (12000 - minIdlePeriod)/2;
+		int[] initialSolution = {minIdlePeriod, midSearchSpace, midSearchSpace};
+		int[] testRes = optimizeAlgo.simulatedAnnealing(initialSolution, 1000, 0.99, eventTasks);
+		System.out.println("Best parameters with Simulated Annealing: Budget "+testRes[0]+" Period: "+testRes[1]+" Deadline "+testRes[2]);
 	
 	}  
 		
