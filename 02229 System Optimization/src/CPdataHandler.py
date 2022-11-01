@@ -2,10 +2,11 @@ from math import gcd
 import pandas as pd
 import numpy as np
 
-def main():
+def CPDataHandler():
     df = load_data('dataBase\\test_separation\\test_separation.csv')
     task_data = add_triples(df)
-    print(task_data)
+    #print(task_data)
+    return task_data
     
 
 
@@ -18,7 +19,7 @@ def add_triples(df):
         task = []
         if df['type'][ind] != "ET":
             for i in range(int(lcm/df['period'][ind])):
-                task.append((i*df['deadline'][ind],df['duration'][ind],df['priority'][ind]))
+                task.append((i*df['deadline'][ind],df['duration'][ind],df['priority'][ind],(1+i)*df['deadline'][ind]))
             task_data.append(task)
     return task_data
     
@@ -32,4 +33,4 @@ def load_data(file):
     
 	
 if __name__ == '__main__':
-    main()
+    cpDatahandler()
