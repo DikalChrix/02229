@@ -7,7 +7,7 @@ from CPdataHandler import *
 def main():
     """Minimal jobshop problem."""
     # Data.
-    jobs_data = CPDataHandler()
+    jobs_data = CPDataHandler('dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv')
     machines_count = 1
     all_machines = range(machines_count)
     # Computes horizon dynamically as the sum of all durations.
@@ -61,7 +61,7 @@ def main():
             model.Add(all_tasks[job_id, task_id +
                                 1].start >= all_tasks[job_id, task_id].end)
 
-            model.Add(all_tasks[job_id, task_id].start < all_tasks[x, y].start).OnlyEnforeIf(all_tasks[job_id, task_id].priority < all_tasks[x, y].priority)
+            #model.Add(all_tasks[job_id, task_id].start < all_tasks[x, y].start).OnlyEnforeIf(all_tasks[job_id, task_id].priority < all_tasks[x, y].priority)
 
             #model.Add(all_tasks[job_id, task_id].end < all_tasks[job_id, task_id].deadline)
             #model.Add((all_tasks[ ,task_id].end < all_tasks[*, task_id+1].start)) #& (all_tasks[job_id, task_id].priority > all_tasks[job_id, task_id+1].priority))
