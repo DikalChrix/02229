@@ -92,7 +92,7 @@ public class EDFAlgorithm {
 			//System.out.println("Current duration: "+currJob.getDuration()+"\t Name: "+currJob.getName());
 			System.out.print(" Working on: "+currJob.getName()+", ticks remaining: "+currJob.getDuration());
 						
-			if(currJob.getDuration() == 0) {
+			if(currJob.getDuration() == 0 && currJob.getDeadline()>=(tick-currJob.getStartTick())) {
 				// Calculate response time
 				currJob.setResponseTime(tick - currJob.getStartTick());
 				// Update worst-case response time
@@ -104,6 +104,8 @@ public class EDFAlgorithm {
 				readyList.remove(taskIndex);
 			}
 		}
+		
+		System.out.println("\nEDF WRCT: "+wcrt);
 			
 		return minIdlePeriod;
 	}

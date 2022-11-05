@@ -110,7 +110,7 @@ public class OptimizationAlgorithm {
 		return resArray;		
 	}
 	
-	public int[] simulatedAnnealing(int[] initialSolution, int Tstart, double alpha, ArrayList<testFormat> eventTasks) {
+	public int[] simulatedAnnealing(int[] initialSolution, int Tstart, double alpha, ArrayList<testFormat> eventTasks, int min) {
 		
 		
 		Instant startTime = Instant.now();
@@ -129,11 +129,15 @@ public class OptimizationAlgorithm {
 		System.out.println("Initial WCRT: "+solutionResponseTime);
 		
 		while(t>0.01) {
-			int[] neighbour = generateNeighbour(initialSolution[0], initialSolution[1], initialSolution[2]);
+			int[] neighbour = generateNeighbourTest(initialSolution[0], initialSolution[1], initialSolution[2], min);
 					
 			
 			//Test WCRT of neighbour solution: 
 			EDPTuple resultNeighbour = runEDP.algorithm(neighbour[0], neighbour[1], neighbour[2], eventTasks);
+			
+			if(resultNeighbour.getResponseTime()==0) {
+				resultNeighbour = runEDP.algorithm(neighbour[0], neighbour[1], neighbour[2], eventTasks);
+			}
 			
 			System.out.println("Neighbour parameters: "+neighbour[0]+" "+neighbour[1]+" "+neighbour[2]);
 			
@@ -144,10 +148,10 @@ public class OptimizationAlgorithm {
 				solutionResponseTime = resultNeighbour.getResponseTime();
 				resultInitial = resultNeighbour;
 				
-				if(resultNeighbour.isResult()) {
+				if(resultNeighbour.isResult() && resultNeighbour.getResponseTime()>0 && resultNeighbour.getResponseTime()<bestCorrectResponseTime)  {
 					bestCorrectSolution = neighbour;
 					bestCorrectResponseTime = resultNeighbour.getResponseTime();
-					System.out.println("Current best, correct Response time: "+bestCorrectResponseTime);
+					System.out.println("Current best, correct Response time: "+bestCorrectResponseTime+" with parameters: "+neighbour[0]+" "+neighbour[1]+" "+neighbour[2]);
 				}
 				
 				
@@ -189,4 +193,69 @@ public class OptimizationAlgorithm {
 			return false;
 		}
 	}
+	
+public int[] generateNeighbourNoPeriod(int budget, int period, int deadline) {
+		
+		//Pick random parameter to change
+		Random rand = new Random();
+		int choice = (int) rand.nextInt(3);
+		
+		//Pick to either increment or decrement
+		int operation = (int) rand.nextInt(1);
+		int res;
+		int[] resArray = {budget, period, deadline};
+		switch(choice) {
+			case 0: //Change budget
+				if(operation == 0 && budget!=1) {
+					res = budget -1;
+				} else if (operation == 1 && budget<period) {
+					res = budget +1;
+				} else if (operation == 0)  {
+					res = budget +1;
+				} else {
+					res = budget -1;
+				}
+				resArray[0] = res;
+				return resArray;
+			case 1: //Change deadline
+				if(operation == 0 && deadline!=1) {
+					res = deadline -1;
+				} else if (operation == 1 && deadline<period) {
+					res = deadline +1;
+				} else if (operation == 0)  {
+					res = deadline +1;
+				} else {
+					res = deadline -1;
+				}
+				resArray[2] = res;
+				return resArray;
+		}
+		return resArray;		
+	}
+
+public int[] generateNeighbourTest(int budget, int period, int deadline, int min) {
+	
+	//Pick random parameter to change
+	Random rand = new Random();
+	
+	//Pick to either increment or decrement
+	int operation = (int) rand.nextInt(1);
+	int res;
+	int[] resArray = {budget, period, deadline};
+			if(operation == 0 && budget!=1 && budget-1!=min) {
+				res = budget -1;
+			} else if (operation == 1 && budget<period) {
+				res = budget +1;
+			} else if (operation == 0)  {
+				res = budget +1;
+			} else {
+				res = budget -1;
+			}
+			resArray[0] = res;
+			resArray[2] = res;
+			return resArray;	
+}
+
+
+
 }
