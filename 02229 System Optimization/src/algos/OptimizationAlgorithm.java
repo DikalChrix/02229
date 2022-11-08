@@ -1,9 +1,13 @@
 package algos;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import objectClasses.EDPTuple;
 import objectClasses.testFormat;
 import java.util.Random;
+import java.util.stream.IntStream;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -257,5 +261,246 @@ public int[] generateNeighbourTest(int budget, int period, int deadline, int min
 }
 
 
+// FOR TESTING OPTIMIZING PARTITIONS OF POLLINGS SERVERS
+
+public ArrayList<ArrayList<testFormat>> testPollingStuff(ArrayList<testFormat> eventTasks) {
+	
+	// Get size of tasks
+	int n = eventTasks.size();
+	
+	ArrayList<testFormat> partition1 = new ArrayList<testFormat>();
+	ArrayList<testFormat> partition2 = new ArrayList<testFormat>();
+	
+	for(int i=0; i<n/2; i++) {
+		partition1.add(eventTasks.get(i));
+	}
+	
+	for(int i=n/2; i<n; i++) {
+		partition2.add(eventTasks.get(i));
+	}
+	
+	
+	ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
+	result.add(partition1);
+	result.add(partition2);
+	
+	return result;
+
+}
+
+public ArrayList<ArrayList<testFormat>> simulatedAnnealingPollingServers(ArrayList<ArrayList<testFormat>> eventTasks, int Tstart, double alpha, int minIdlePeriod) {
+	
+	//Count number of polling tasks needed
+	int n = eventTasks.size();
+	
+	Instant startTime = Instant.now();
+	
+	double t = Tstart;
+	int delta = 0;
+	
+	// Test initial solution, check how good the runtimes of each polling server is
+	EDPAlgorithm runEDP = new EDPAlgorithm();
+	boolean resultBoolean = false;
+	int bestTotalResponseTime = 0;
+	int currentTotalResponseTime = 0;
+	
+	
+	
+	
+	for(int i=0; i<n; i++) {
+		EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod/n, 1000, 1000, eventTasks.get(i));
+		if(!resultInitial.isResult()) {
+			resultBoolean = false;
+			break; 
+		} else {
+			resultBoolean = true;
+			bestTotalResponseTime = bestTotalResponseTime + resultInitial.getResponseTime();
+		}
+	}
+	
+	// Now we know the total response time of our initial solution & if it works
+	
+	//System.out.println("Initial WCRT: "+solutionResponseTime);
+	
+	currentTotalResponseTime = bestTotalResponseTime;
+	ArrayList<ArrayList<testFormat>> currentPartition = eventTasks;
+	ArrayList<ArrayList<testFormat>> bestPartition = eventTasks;
+	
+	
+	while(t>0.01) {
+		
+		ArrayList<ArrayList<testFormat>> neighbourPartition = new ArrayList<ArrayList<testFormat>>();
+		if(n>2) {
+			neighbourPartition = swapN(eventTasks);
+		} else {
+			neighbourPartition = swap2(eventTasks);
+		}
+	
+		
+		
+				
+		int newTotalResponseTime = 0;
+		
+		resultBoolean = false;
+		
+		//Test newly generated solution; 
+		for(int i=0; i<n; i++) {
+			EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks.get(i));
+			if(!resultInitial.isResult()) {
+				resultBoolean = false;
+				System.out.print("\t "+resultInitial.isResult()+" \t");
+				break;
+			} else {
+				resultBoolean = true;
+				newTotalResponseTime = newTotalResponseTime + resultInitial.getResponseTime();
+			}
+		}
+		
+		// Print out the new partition
+		
+		delta = bestTotalResponseTime - newTotalResponseTime; // If delta is positive, the Neighbour is a better solution
+		
+		if( delta>0 || probabilityFunc(delta, t) ) {
+			currentPartition = neighbourPartition;
+			currentTotalResponseTime = newTotalResponseTime;
+			
+			System.out.print("\t Current Total Response Time: "+currentTotalResponseTime+"\t");
+			
+			if(resultBoolean && newTotalResponseTime>0 && newTotalResponseTime<bestTotalResponseTime)  {
+				bestPartition = neighbourPartition;
+				bestTotalResponseTime = newTotalResponseTime;
+				System.out.println("Current best, correct Total Response time: "+bestTotalResponseTime+" with partition: ?");
+			}
+			
+			
+		}
+		t = t*alpha; //Change of temperature for each round
+		
+		System.out.println("\t Temperature: "+t);
+		printOutPartitions(currentPartition);
+	}
+	
+	
+	
+	
+	return bestPartition;
+
+
+}
+
+public ArrayList<ArrayList<testFormat>> swap2(ArrayList<ArrayList<testFormat>> eventTasks){
+	
+	//Extract the tasks of the two polling servers:
+	ArrayList<testFormat> pollTasks1 = eventTasks.get(0);
+	ArrayList<testFormat> pollTasks2 = eventTasks.get(1);
+	
+	//Generate random indices to swap:
+	Random rand = new Random();
+	int index1 = (int) rand.nextInt(pollTasks1.size());
+	int index2 = (int) rand.nextInt(pollTasks2.size());
+	
+	//Swaps the elements
+	testFormat temp = pollTasks1.get(index1);
+	pollTasks1.set(index1,pollTasks2.get(index2));
+	pollTasks2.set(index2, temp);
+	
+	//Packs up the arraylist
+	ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
+	result.add(pollTasks1);
+	result.add(pollTasks2);
+	
+	
+	return result;
+}
+
+public ArrayList<ArrayList<testFormat>> swapN(ArrayList<ArrayList<testFormat>> eventTasks){
+
+	//Get number of polling servers
+	int n = eventTasks.size();
+	
+	//Generate random order of swapping
+	// Generate the list arraylist of integers from 1 to n
+	ArrayList<Integer> orderList = new ArrayList<Integer>();
+	for(int i=0; i<n; i++) {
+		orderList.add(i);
+	}
+	
+	
+	Collections.shuffle(orderList); // Shuffles the list
+	
+	//Convert order of swapping to pairs
+	ArrayList<ArrayList<Integer>> swapPairs = extractPairsFromList(orderList, n);
+	
+	System.out.println("Number of pairs: "+swapPairs.size());
+	
+	
+	//
+	ArrayList<ArrayList<testFormat>> result = eventTasks;
+	
+	
+	for(int i=0; i<n; i++) {
+		
+		//Extract number for first pair
+		ArrayList<Integer> pair = swapPairs.get(i);
+		
+		ArrayList<ArrayList<testFormat>> inputSwap = new ArrayList<ArrayList<testFormat>>();
+		inputSwap.add(result.get(pair.get(0)));
+		inputSwap.add(result.get(pair.get(1)));
+		
+		//Perform swapping and put result back into result-arraylist
+		ArrayList<ArrayList<testFormat>> swappedResult = swap2(result);
+		result.set(pair.get(0),swappedResult.get(0));
+		result.set(pair.get(1),swappedResult.get(1));
+ 		
+	}
+	
+	return result;
+}
+
+public ArrayList<ArrayList<Integer>>extractPairsFromList(ArrayList<Integer> order, int n){
+	
+	// Result
+	ArrayList<ArrayList<Integer>> result = new ArrayList<ArrayList<Integer>>();
+	
+	for(int i=0;i<n-1;i++) {
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		temp.add(order.get(i));
+		temp.add(order.get(i+1));
+		result.add(temp);
+	}
+	
+	//Last pair between first and last partition in order:
+	ArrayList<Integer> temp = new ArrayList<Integer>();
+	temp.add(order.get(n-1));
+	temp.add(order.get(0));
+	result.add(temp);
+	
+	return result;
+	
+}
+
+public void printOutPartitions(ArrayList<ArrayList<testFormat>> partitions) {
+	
+	// Number of partitions:
+	int n = partitions.size();
+	
+	for(int i=0; i<n; i++) {
+		
+		// Get # of tasks in single partition
+		int m = partitions.get(i).size();
+		
+		System.out.print("\t Tasks in parition "+i+": \t");
+		
+		for(int j=0; j<m; j++) {
+			System.out.print(" "+partitions.get(i).get(j).getName());
+			
+			// Make comma between tasks, except at last one:
+			if(j!=m-1) {
+				System.out.print(",");
+			}
+		}
+	}
+	
+}
 
 }

@@ -35,9 +35,8 @@ public class main {
 		System.out.println("Minimum idle period: "+minIdlePeriod);
 		
 		// Runs EPD algorithm once
-		//EDPTuple result =runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks);
-		//System.out.println("EDP result: "+result.isResult()+" ResponseTime: "+result.getResponseTime());
-		
+		EDPTuple result =runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks);
+		System.out.println("EDP result: "+result.isResult()+" ResponseTime: "+result.getResponseTime());
 		
 		//Testing Optimization Algorithm:
 		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm();
@@ -54,10 +53,25 @@ public class main {
 		//int midSearchSpace = (12000 - minIdlePeriod)/2; // Find the middle of the search space and use as starting parameters
 		
 		//int[] initialSolution = {minIdlePeriod, minIdlePeriod, minIdlePeriod}; //
-		int[] initialSolution = {minIdlePeriod, 1000, minIdlePeriod}; //Chris test
-		int[] testRes = optimizeAlgo.simulatedAnnealing(initialSolution, 100000, 0.999, eventTasks, minIdlePeriod);
-		System.out.println("Best parameters with Simulated Annealing: Budget "+testRes[0]+" Period: "+testRes[1]+" Deadline "+testRes[2]);
+		//int[] initialSolution = {minIdlePeriod, 1000, 1000}; //Chris test
+		//int[] testRes = optimizeAlgo.simulatedAnnealing(initialSolution, 100000, 0.999, eventTasks, minIdlePeriod);
+		//System.out.println("Best parameters with Simulated Annealing: Budget "+testRes[0]+" Period: "+testRes[1]+" Deadline "+testRes[2]);
 	
+		
+		// TEST OF POLLING OPTIMIZATION
+		
+		ArrayList<ArrayList<testFormat>> partitions = optimizeAlgo.testPollingStuff(eventTasks);
+		
+		optimizeAlgo.printOutPartitions(partitions);
+		
+		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(partitions, 100, 0.9, 835);
+		
+		// Print out result
+		optimizeAlgo.printOutPartitions(optimalPartitions);
+		
+		
+		
+		
 	}  
 		
 		

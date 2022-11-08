@@ -45,8 +45,16 @@ public class EDPAlgorithm {
 			responseTime = x.getDeadline()+1;
 			
 			while(tick<=hyperPeriod) {
+				
 				double supply = alpha*(tick-delta);
+				
+				if(supply<0) {
+					supply = 0;	
+				}
+				
 				double demand = 0;
+				
+				//System.out.println(" Supply: "+supply+"   Demand: "+demand+" ");
 				
 				//Get list of tasks with larger period than current x
 				for(testFormat j: getEventsLargerPriority(tasks, x )) {
@@ -58,11 +66,14 @@ public class EDPAlgorithm {
 					break;
 				}				
 
-				tick++;				
+				tick++;
+				//System.out.println(" Supply: "+supply+"   Demand: "+demand+" ");
 			}
 			
 			if (responseTime>x.getDeadline()) {
 				result.setResponseTime(responseTime);
+				System.out.print("Deadline exceeded: Response Time:"+responseTime+" Deadline:"+x.getDeadline());
+				
 				return result;
 			}		
 		}
