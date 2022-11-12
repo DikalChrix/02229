@@ -506,4 +506,51 @@ public void printOutPartitions(ArrayList<ArrayList<testFormat>> partitions) {
 	
 }
 
+// FOR TESTING PARAMETERS OF INDIVIDUAL POLLING SERVERS
+
+public void optimizePollingParameters(ArrayList<ArrayList<testFormat>> partitions, int initialBudget, int initialDeadline, int initialPeriod, int min, int max) {
+	
+	int n = partitions.size();
+	
+	
+	int maxBudget = initialBudget;
+	//int maxDeadline = initialDeadline;
+	//int maxPeriod = initialPeriod;
+	
+	ArrayList<int[]> result = new ArrayList<int[]>();
+	
+	for(int i = 0; i<n; i++) {
+		result.add(optimizePollingPeriod(initialBudget, initialDeadline, initialPeriod, partitions.get(i)));
+		
+		//Adjust initial budget
+		if(result.get(i)[1]<maxBudget) {
+			initialBudget = initialBudget + (maxBudget - result.get(i)[1]);
+		}
+		
+		
+	}
+	
+	
+	
+}
+
+
+
+
+
+public double finalWCRT(int EDFWCRT, int EDPWCRT, int timeTasksSize, int eventTasksSize) {
+	
+	double timeTasksWeight = timeTasksSize/(timeTasksSize+eventTasksSize);
+	double eventTasksWeight = eventTasksSize/(timeTasksSize+eventTasksSize);
+	
+	return (timeTasksWeight*EDFWCRT+eventTasksWeight * EDPWCRT)/2;
+	
+	
+	
+	
+	
+}
+
+
+
 }

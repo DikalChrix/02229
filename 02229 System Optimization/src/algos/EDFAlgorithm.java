@@ -9,7 +9,7 @@ public class EDFAlgorithm {
 	
 	int taskIndex = -1; //Remember index in of current job in readyList
 	
-	public int algorithm(ArrayList<testFormat> tasks) {
+	public int[] algorithm(ArrayList<testFormat> tasks) {
 		
 		int n = tasks.size();
 		int t=0;
@@ -19,7 +19,8 @@ public class EDFAlgorithm {
 			// Check that input data is valid
 			if (!(tasks.get(i).getType().equals("TT"))) {
 				System.out.println("EDF Algorithm was called with one ET Task");
-				return -1;	
+				int[] output ={-1,-1}; 
+				return output;	
 			}
 			// Setup
 			periodArray[i] = tasks.get(i).getPeriod();
@@ -108,7 +109,10 @@ public class EDFAlgorithm {
 		System.out.println("\nEDF WRCT: "+wcrt);
 		
 		// TODO: Should also return the WCRT, not just print it 
-		return minIdlePeriod;
+		int[] output = {minIdlePeriod, wcrt};
+ 		
+		
+		return output;
 	}
 	
 	

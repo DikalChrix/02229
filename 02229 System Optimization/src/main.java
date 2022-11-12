@@ -28,7 +28,10 @@ public class main {
 		eventTasks = seperatedTasks.get(1);
 		
 		// Runs the EDF algorithm to schedule time tasks. Returns the minmum idle period per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
-		int minIdlePeriod = runEDF.algorithm(timeTasks);
+		int[] EDFoutput = new int[2];
+		EDFoutput = runEDF.algorithm(timeTasks);
+		int minIdlePeriod = EDFoutput[0];
+		int EDFWCRT = EDFoutput[1];
 		//TODO: Other parameters for EDP has been manually inserted according to runs of EDF, should be done dynamically.
 		//TODO: Maybe calculate smallest idle time when running EDP, so we know the max amount of time we have for polling servers each period.
 		//Delta is period where supply is negative/null, so time is reserved for TT tasks.
@@ -75,6 +78,11 @@ public class main {
 		// TODO: Weighted Sum Method for calculating final WRCT
 		// Idea for WCRT of polling servers: Let weight be equal to percentage of event tasks handled, then take average of sum.
 		// For EDF and EDP combination, base weight on handled percentage of combined set of tasks
+		
+		
+		
+		
+		
 		
 	}  
 		
