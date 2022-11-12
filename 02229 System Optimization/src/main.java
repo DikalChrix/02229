@@ -15,7 +15,7 @@ public class main {
 		EDFAlgorithm runEDF = new EDFAlgorithm();
 		EDPAlgorithm runEDP = new EDPAlgorithm();
 		
-		// Reads the data from the csv files
+		// Reads the data from the csv files, creates the task objects and puts them in an arraylist
 		ArrayList<testFormat> mixedTasks = new ArrayList<testFormat>();
 		mixedTasks = dataHandler.readTestData();
 		
@@ -64,13 +64,17 @@ public class main {
 		
 		optimizeAlgo.printOutPartitions(partitions);
 		
-		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(partitions, 100, 0.9, 835);
+		System.out.println(" STARTING OPTIMIZATION");
 		
-		// Print out result
+		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(partitions, 10000, 0.99, 835);
+		
+		// Print out result	
 		optimizeAlgo.printOutPartitions(optimalPartitions);
 		
 		
-		
+		// TODO: Weighted Sum Method for calculating final WRCT
+		// Idea for WCRT of polling servers: Let weight be equal to percentage of event tasks handled, then take average of sum.
+		// For EDF and EDP combination, base weight on handled percentage of combined set of tasks
 		
 	}  
 		

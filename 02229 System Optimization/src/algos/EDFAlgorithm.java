@@ -1,4 +1,4 @@
-package algos;
+						package algos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -106,7 +106,8 @@ public class EDFAlgorithm {
 		}
 		
 		System.out.println("\nEDF WRCT: "+wcrt);
-			
+		
+		// TODO: Should also return the WCRT, not just print it 
 		return minIdlePeriod;
 	}
 	

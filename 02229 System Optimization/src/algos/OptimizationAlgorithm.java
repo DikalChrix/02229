@@ -308,7 +308,7 @@ public ArrayList<ArrayList<testFormat>> simulatedAnnealingPollingServers(ArrayLi
 	
 	
 	for(int i=0; i<n; i++) {
-		EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod/n, 1000, 1000, eventTasks.get(i));
+		EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod/n, 1000/n, 1000/n, eventTasks.get(i));
 		if(!resultInitial.isResult()) {
 			resultBoolean = false;
 			break; 
@@ -345,7 +345,7 @@ public ArrayList<ArrayList<testFormat>> simulatedAnnealingPollingServers(ArrayLi
 		
 		//Test newly generated solution; 
 		for(int i=0; i<n; i++) {
-			EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks.get(i));
+			EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod/n, 1000/n, 1000/n, eventTasks.get(i));
 			if(!resultInitial.isResult()) {
 				resultBoolean = false;
 				System.out.print("\t "+resultInitial.isResult()+" \t");
@@ -369,19 +369,22 @@ public ArrayList<ArrayList<testFormat>> simulatedAnnealingPollingServers(ArrayLi
 			if(resultBoolean && newTotalResponseTime>0 && newTotalResponseTime<bestTotalResponseTime)  {
 				bestPartition = neighbourPartition;
 				bestTotalResponseTime = newTotalResponseTime;
-				System.out.println("Current best, correct Total Response time: "+bestTotalResponseTime+" with partition: ?");
+				//System.out.print("Current best, correct Total Response time: "+bestTotalResponseTime+" with partition: ?");
 			}
 			
 			
+		} else {
+			System.out.print("\t\t\t\t");
 		}
 		t = t*alpha; //Change of temperature for each round
 		
-		System.out.println("\t Temperature: "+t);
+		System.out.print("\t Temperature: "+t+" \t");
 		printOutPartitions(currentPartition);
+		System.out.println("");
 	}
 	
 	
-	
+	System.out.println("\t Best correct Total Response time: "+bestTotalResponseTime+" with partition:");
 	
 	return bestPartition;
 
