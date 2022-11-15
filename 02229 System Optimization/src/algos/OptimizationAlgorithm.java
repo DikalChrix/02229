@@ -384,7 +384,6 @@ public ArrayList<ArrayList<testFormat>> simulatedAnnealingPollingServers(ArrayLi
 	}
 	
 	
-	System.out.println("\t Best correct Total Response time: "+bestTotalResponseTime+" with partition:");
 	
 	return bestPartition;
 
@@ -431,15 +430,18 @@ public ArrayList<ArrayList<testFormat>> swapN(ArrayList<ArrayList<testFormat>> e
 	
 	Collections.shuffle(orderList); // Shuffles the list
 	
+	
 	//Convert order of swapping to pairs
 	ArrayList<ArrayList<Integer>> swapPairs = extractPairsFromList(orderList, n);
 	
-	System.out.println("Number of pairs: "+swapPairs.size());
+	//System.out.println("Number of pairs: "+swapPairs.size());
 	
 	
 	//
 	ArrayList<ArrayList<testFormat>> result = eventTasks;
-	
+
+	//printOutPartitions(result);
+	//System.out.println("\n");
 	
 	for(int i=0; i<n; i++) {
 		
@@ -450,12 +452,24 @@ public ArrayList<ArrayList<testFormat>> swapN(ArrayList<ArrayList<testFormat>> e
 		inputSwap.add(result.get(pair.get(0)));
 		inputSwap.add(result.get(pair.get(1)));
 		
+		System.out.println("Before: ");
+		printOutPartitions(result);
+		System.out.println("\n");
+		
 		//Perform swapping and put result back into result-arraylist
 		ArrayList<ArrayList<testFormat>> swappedResult = swap2(result);
 		result.set(pair.get(0),swappedResult.get(0));
 		result.set(pair.get(1),swappedResult.get(1));
+		
+		System.out.println("After: ");
+		printOutPartitions(result);
+		System.out.println("\n");
+		break;
  		
 	}
+	
+	//printOutPartitions(result);
+	//System.out.println("\n");
 	
 	return result;
 }
@@ -484,8 +498,12 @@ public ArrayList<ArrayList<Integer>>extractPairsFromList(ArrayList<Integer> orde
 
 public void printOutPartitions(ArrayList<ArrayList<testFormat>> partitions) {
 	
+	
+	
 	// Number of partitions:
 	int n = partitions.size();
+	
+	//System.out.println("Size: "+n);
 	
 	for(int i=0; i<n; i++) {
 		
@@ -534,10 +552,6 @@ public void optimizePollingParameters(ArrayList<ArrayList<testFormat>> partition
 	
 }
 
-
-
-
-
 public double finalWCRT(int EDFWCRT, int EDPWCRT, int timeTasksSize, int eventTasksSize) {
 	
 	double timeTasksWeight = timeTasksSize/(timeTasksSize+eventTasksSize);
@@ -550,6 +564,97 @@ public double finalWCRT(int EDFWCRT, int EDPWCRT, int timeTasksSize, int eventTa
 	
 	
 }
+
+public ArrayList<ArrayList<testFormat>> testingNumPollingServers(ArrayList<testFormat> eventTasks, int numPolling) {
+	
+	//System.out.println("Size: "+eventTasks.size());
+	
+	
+	ArrayList<testFormat> sortedEventTasks = sortTasksDuration(eventTasks);
+	ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
+	int[] polDura = new int[numPolling];
+	if (sortedEventTasks.size() < numPolling) {
+		for (int i = 0; i<sortedEventTasks.size(); i++ ) {
+			ArrayList<testFormat> temp = new ArrayList<testFormat>();
+			temp.add(sortedEventTasks.get(i));
+			result.add(i, temp);
+		}
+	}
+	else {
+		for (int i = 0; i < numPolling; i++) {
+			ArrayList<testFormat> temp = new ArrayList<testFormat>();
+			temp.add(sortedEventTasks.get(i));
+			polDura[i] = temp.get(0).getDuration();
+			result.add(temp);
+		}
+		for (int i = 0; i < numPolling; i++) {
+			sortedEventTasks.remove(i);
+		}
+		while (!sortedEventTasks.isEmpty())
+		{
+			int index = 0;
+			int durCheck = 15000;
+			for(int i = 0; i<numPolling;i++) {
+				if (durCheck > polDura[i]) {
+					durCheck = polDura[i];
+					index = i;
+				}
+			}
+			ArrayList<testFormat> temp = result.get(index);
+			temp.add(sortedEventTasks.get(0));
+			polDura[index] += sortedEventTasks.get(0).getDuration();
+			sortedEventTasks.remove(0);
+			result.set(index, temp);
+		}
+	}
+	
+	return result;
+}
+
+public ArrayList<testFormat> sortTasksDuration (ArrayList<testFormat> ET) {
+	ArrayList<testFormat> result = new ArrayList<testFormat>();
+	while(!ET.isEmpty()) {
+		int i = 0;
+		int mainDura = ET.get(i).getDuration();
+		int mainIndex = 0;
+		for (int j = 1; j <ET.size();j++) {
+			int tempDura = ET.get(j).getDuration();
+			if (tempDura > mainDura) {
+				mainDura = tempDura;
+				mainIndex = j;
+			}
+		}
+		result.add(ET.get(mainIndex));
+		ET.remove(mainIndex);
+	}
+	
+	return result;
+}
+
+public int testPartitionPolling(ArrayList<ArrayList<testFormat>> partitions, int minIdlePeriod) {
+	
+	// Number of polling servers:
+	int n = partitions.size();
+	
+	EDPAlgorithm runEDP = new EDPAlgorithm();
+	int totalResponseTime = 0;
+	
+	for(int i=0; i<n; i++) {	
+		EDPTuple resultInitial = runEDP.algorithm(minIdlePeriod/n, 1000/n, 1000/n, partitions.get(i));
+		
+		//System.out.println("Result: "+resultInitial.isResult());
+		
+		if(!resultInitial.isResult()) {
+			return Integer.MAX_VALUE; // If one polling server can not satisfy the tasks it is given, let it fail 
+		} else {
+			totalResponseTime = totalResponseTime + resultInitial.getResponseTime();
+		}				
+	}
+	
+	return totalResponseTime;
+}
+
+
 
 
 

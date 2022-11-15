@@ -65,14 +65,47 @@ public class main {
 		
 		ArrayList<ArrayList<testFormat>> partitions = optimizeAlgo.testPollingStuff(eventTasks);
 		
-		optimizeAlgo.printOutPartitions(partitions);
+		//Test best number of polling servers 
+		
+		int bestNumberPolling = 0;
+		int bestTotalWCRT = Integer.MAX_VALUE;
+		ArrayList<ArrayList<testFormat>> bestPartitions = new ArrayList<ArrayList<testFormat>>();
+		
+		for(int i = 1; i<11; i++) {
+			
+			// Deepcopy eventTasks
+			ArrayList<testFormat> eventTasksCopy = new ArrayList<testFormat>();
+			for(int j = 0; j<eventTasks.size(); j++) {
+				eventTasksCopy.add(eventTasks.get(j).clone());
+			}
+			
+			ArrayList<ArrayList<testFormat>> currentPartitions = optimizeAlgo.testingNumPollingServers(eventTasksCopy,i);
+			
+			//optimizeAlgo.printOutPartitions(currentPartitions);
+			
+			int currentWCRT = optimizeAlgo.testPartitionPolling(currentPartitions, minIdlePeriod);	
+			
+			System.out.println("Current response time: "+currentWCRT);
+			
+			if(currentWCRT < bestTotalWCRT) {
+				bestTotalWCRT = currentWCRT;
+				bestNumberPolling = i;
+				bestPartitions = currentPartitions;
+			}
+		}	
+		
+		//
+		
+		System.out.println("Best WCRT after finding # of polling server: "+bestTotalWCRT);
+		System.out.println("Optimal number of polling servers: "+bestNumberPolling);
+		optimizeAlgo.printOutPartitions(bestPartitions);
 		
 		System.out.println(" STARTING OPTIMIZATION");
 		
-		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(partitions, 10000, 0.99, 835);
+		//ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(bestPartitions, 10000, 0.99, minIdlePeriod);
 		
-		// Print out result	
-		optimizeAlgo.printOutPartitions(optimalPartitions);
+		//Print out result	
+		optimizeAlgo.printOutPartitions(optimizeAlgo.swapN(bestPartitions));
 		
 		
 		// TODO: Weighted Sum Method for calculating final WRCT
