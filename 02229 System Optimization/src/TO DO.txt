@@ -13,12 +13,12 @@
 
 - findOptimalPartitions & testPartitions still use total instead of avg
 
-- Find best intial parameters for individual polling servers
+- Find best initial parameters for individual polling servers
 
 
 // IMPLEMENT:
 
-- Support seperation of event tasks (Maybe do that when we find optimal paritions, so only pick solutions that satisfy the seperation requirements?)
+- Support separation of event tasks (Maybe do that when we find optimal partitions, so only pick solutions that satisfy the separation requirements?)
 
 - Make function to run ALL datasets and easily see which ones fail
 
