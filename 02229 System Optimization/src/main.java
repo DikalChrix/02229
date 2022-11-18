@@ -47,18 +47,18 @@ public class main {
 		// initial partitions. Uses simulated annealing, with start temperature of 10000
 		// and rate of 0.99
 		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo
-				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.99, minIdlePeriod);
+				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.99, minIdlePeriod, 1000-minIdlePeriod);
 
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
-		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, minIdlePeriod);
+		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, minIdlePeriod, 1000-minIdlePeriod);
 
 		// Runs the EDP algorithm for each polling task using their optimal partitions
 		// and parameters and returns list of the individual WCRTs.
 		int[] eventWCRTs = optimizeAlgo.optimalPollingServerRun(optimalPartitions, optimalParameters);
 
 		// Calculates the average WCRT of all the polling servers
-		int EDPWCRT = optimizeAlgo.finalEventWCRT(eventWCRTs);
+		int EDPWCRT = optimizeAlgo.finalEventWCRT(eventWCRTs, optimalPartitions, eventTasks);
 
 		// Calculates the final, average WCRT of the whole dataset
 		int finalWCRT = optimizeAlgo.finalWCRT(EDFWCRT, EDPWCRT, timeTasks.size(), eventTasks.size());

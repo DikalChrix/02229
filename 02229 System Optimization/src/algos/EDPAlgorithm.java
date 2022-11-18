@@ -72,7 +72,7 @@ public class EDPAlgorithm {
 			
 			if (responseTime>x.getDeadline()) {
 				result.setResponseTime(responseTime);
-				System.out.print("Deadline exceeded: Response Time:"+responseTime+" Deadline:"+x.getDeadline());
+				//System.out.print("Deadline exceeded: Response Time:"+responseTime+" Deadline:"+x.getDeadline());
 				
 				return result;
 			}		

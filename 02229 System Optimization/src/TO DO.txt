@@ -1,17 +1,19 @@
 
 // QUESTIONS FOR TA:
+
 - Polling Tasks have uneven periods (does not divide 12000), is it okay to still have hyperperiod at 12000?
 
 - How should we combine the WCRT of the EDF-algorithm from the individual polling tasks. Just take the average? Weight them out from how many tasks they each have?
 
+- Minimal parameters of EDP-algorithm. If you just let it run, it might reach (1,2,2). Is that okay?
 
 // CHECK:
 
 - Make sure that the initial parameters in Simulated Annealing, testPartitions and findOptimalPartitions are equal
 
-- Let eventWCRT also use weights, like the finalWCRT function does
+- Let eventWCRT also use weights, like the finalWCRT function does (Double check that it is correct, but is not used after all)
 
-- findOptimalPartitions & testPartitions still use total instead of avg
+- findOptimalPartitions & testPartitions still use total instead of avg (Kinda need answer from TA on the second question)
 
 - Find best initial parameters for individual polling servers
 
@@ -25,4 +27,10 @@
 - Make function to test performance of the whole software solution/algorithm
 
 - Make print statements for troubleshooting, e.g. so we quickly can locate a bug and fix during performance testing
+
+// REMEMBER:
+
+- Additional constraint added to simulated annealing: Polling server budget *number of polling servers =< polling server deadline 
+
+- Another constraint added to simulated annealing: Sum of polling severs budget + max time needed for time tasks each 1000 tics =< Deadline of polling server.
 

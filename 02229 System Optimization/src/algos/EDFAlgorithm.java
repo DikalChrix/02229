@@ -55,8 +55,8 @@ public class EDFAlgorithm {
 			// Check if new job has been released:
 			readyList = getReady(tasks, readyList, tick);
 			
-			System.out.print("\n ReadyList at start of cycle "+tick+": ");
-			printJobsListName(readyList);
+			//System.out.print("\n ReadyList at start of cycle "+tick+": ");
+			//printJobsListName(readyList);
 			/*
 			if (tick==4100) {
 				System.exit(0);
@@ -92,7 +92,7 @@ public class EDFAlgorithm {
 			// Decrement execution time of current task
 			currJob.setDuration(currJob.getDuration()-1);
 			//System.out.println("Current duration: "+currJob.getDuration()+"\t Name: "+currJob.getName());
-			System.out.print(" Working on: "+currJob.getName()+", ticks remaining: "+currJob.getDuration());
+			//System.out.println(" Working on: "+currJob.getName()+", ticks remaining: "+currJob.getDuration());
 						
 			if(currJob.getDuration() == 0 && currJob.getDeadline()>=(tick-currJob.getStartTick())) {
 				// Calculate response time
@@ -103,7 +103,7 @@ public class EDFAlgorithm {
 				}
 				//Remove finished job from readylist
 				//System.out.println("Check");
-				System.out.println("Removed");
+				//System.out.println("Removed");
 				readyList.remove(taskIndex);
 			}
 		}
