@@ -30,12 +30,14 @@ public class main {
 		// Runs the EDF algorithm to schedule time tasks. Returns the minmum idle period per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
 		int[] EDFoutput = new int[2];
 		EDFoutput = runEDF.algorithm(timeTasks);
-		int minIdlePeriod = EDFoutput[0];
+		int minIdlePeriod = EDFoutput[0];	
 		int EDFWCRT = EDFoutput[1];
 		//TODO: Other parameters for EDP has been manually inserted according to runs of EDF, should be done dynamically.
 		//TODO: Maybe calculate smallest idle time when running EDP, so we know the max amount of time we have for polling servers each period.
 		//Delta is period where supply is negative/null, so time is reserved for TT tasks.
 		System.out.println("Minimum idle period: "+minIdlePeriod);
+		
+		//System.exit(0);
 		
 		// Runs EPD algorithm once
 		EDPTuple result =runEDP.algorithm(minIdlePeriod, 1000, 1000, eventTasks);
@@ -61,51 +63,50 @@ public class main {
 		//System.out.println("Best parameters with Simulated Annealing: Budget "+testRes[0]+" Period: "+testRes[1]+" Deadline "+testRes[2]);
 	
 		
-		// TEST OF POLLING OPTIMIZATION
-		
-		ArrayList<ArrayList<testFormat>> partitions = optimizeAlgo.testPollingStuff(eventTasks);
-		
-		//Test best number of polling servers 
-		
-		int bestNumberPolling = 0;
-		int bestTotalWCRT = Integer.MAX_VALUE;
-		ArrayList<ArrayList<testFormat>> bestPartitions = new ArrayList<ArrayList<testFormat>>();
-		
-		for(int i = 1; i<11; i++) {
-			
-			// Deepcopy eventTasks
-			ArrayList<testFormat> eventTasksCopy = new ArrayList<testFormat>();
-			for(int j = 0; j<eventTasks.size(); j++) {
-				eventTasksCopy.add(eventTasks.get(j).clone());
-			}
-			
-			ArrayList<ArrayList<testFormat>> currentPartitions = optimizeAlgo.testingNumPollingServers(eventTasksCopy,i);
-			
-			//optimizeAlgo.printOutPartitions(currentPartitions);
-			
-			int currentWCRT = optimizeAlgo.testPartitionPolling(currentPartitions, minIdlePeriod);	
-			
-			System.out.println("Current response time: "+currentWCRT);
-			
-			if(currentWCRT < bestTotalWCRT) {
-				bestTotalWCRT = currentWCRT;
-				bestNumberPolling = i;
-				bestPartitions = currentPartitions;
-			}
-		}	
-		
-		//
-		
-		System.out.println("Best WCRT after finding # of polling server: "+bestTotalWCRT);
-		System.out.println("Optimal number of polling servers: "+bestNumberPolling);
-		optimizeAlgo.printOutPartitions(bestPartitions);
+		// FIND OPTIMAL NUMBER OF POLLING SERVERS		
+		ArrayList<ArrayList<testFormat>> initialPollingServerPartitions = optimizeAlgo.findNumberPollingServers(eventTasks, minIdlePeriod);
 		
 		System.out.println(" STARTING OPTIMIZATION");
-		
-		//ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(bestPartitions, 10000, 0.99, minIdlePeriod);
+				
+		// FIND BEST PARTITIONS FOR POLLING SERVERS
+		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.simulatedAnnealingPollingServers(initialPollingServerPartitions, 10000, 0.99, minIdlePeriod);
 		
 		//Print out result	
-		optimizeAlgo.printOutPartitions(optimizeAlgo.swapN(bestPartitions));
+		System.out.println("OPTIMAL PARTITIONS: \t");
+		optimizeAlgo.printOutPartitions(optimalPartitions);
+		System.out.println("\nWCRT using single polling server: "+result.getResponseTime());
+		
+		// FIND BEST PARAMETERS FOR POLLING SERVERS
+		int[][] optimalParameters = optimizeAlgo.findOptimalPollingServerParameters(optimalPartitions, minIdlePeriod);
+		
+		// GET WCRTs OF ALL POLLING SERVERS USING THEIR BEST PARAMETERS
+		int[] eventWCRTs = optimizeAlgo.optimalPollingServerRun(optimalPartitions, optimalParameters);
+		
+		// CALCULATE WCRT OF ALL POLLING SERVERS
+		int EDPWCRT = optimizeAlgo.finalEventWCRT(eventWCRTs);
+		
+		System.out.println("test "+EDPWCRT+" "+EDFWCRT);
+		
+		// CALCULATE FINAL WCRT OF EVENT AND TIME TASKS
+		int finalWCRT = optimizeAlgo.finalWCRT(EDFWCRT, EDPWCRT, timeTasks.size(), eventTasks.size());
+		
+		// OUTPUT WCRT OF DATASET
+		System.out.println("FINAL WCRT: "+finalWCRT);
+		
+		// CREATE POLLING TASKS AS TIME TASKS
+		ArrayList<testFormat> finalTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
+		
+		// RUN EDF AGAIN WITH NORMAL TIME TASKS AND POLLING TASKS. PRINT OUT SCHEDULE
+		EDFoutput = runEDF.algorithm(timeTasks);
+		EDFWCRT = EDFoutput[1];
+		//TODO: Other parameters for EDP has been manually inserted according to runs of EDF, should be done dynamically.
+		//TODO: Maybe calculate smallest idle time when running EDP, so we know the max amount of time we have for polling servers each period.
+		//Delta is period where supply is negative/null, so time is reserved for TT tasks.
+		System.out.println("Final WCRT: "+EDFWCRT);
+		System.out.println("optimized Deadline: "+optimalParameters[2][0]);
+		
+		
+		
 		
 		
 		// TODO: Weighted Sum Method for calculating final WRCT

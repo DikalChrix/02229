@@ -36,7 +36,8 @@ public class EDFAlgorithm {
 		}
 		
 		//System.out.println(Arrays.toString(periodArray));
-		t = lcmMultiple(periodArray);
+		//t = lcmMultiple(periodArray);
+		t = 12000;
 		String[] schedule = new String[t];
 		
 		int wcrt = 0;
@@ -102,6 +103,7 @@ public class EDFAlgorithm {
 				}
 				//Remove finished job from readylist
 				//System.out.println("Check");
+				System.out.println("Removed");
 				readyList.remove(taskIndex);
 			}
 		}
@@ -111,10 +113,10 @@ public class EDFAlgorithm {
 		// TODO: Should also return the WCRT, not just print it 
 		int[] output = {minIdlePeriod, wcrt};
  		
+		schedulePrinter(schedule);
 		
 		return output;
 	}
-	
 	
 	public int gcdPair(int a, int b) {
 		int temp;
@@ -130,7 +132,6 @@ public class EDFAlgorithm {
 		return (a*b)/gcdPair(a,b);
 	}
 	
-
 	public int lcmMultiple(int[] numbers) {
 		
 		int temp = numbers[0];
@@ -174,9 +175,22 @@ public class EDFAlgorithm {
 	
 	public ArrayList<testFormat> getReady(ArrayList<testFormat> tasks, ArrayList<testFormat> currReadyList, int tick) {
 		
+		for(int i=0; i<currReadyList.size(); i++) {
+			if(currReadyList.get(i).getDuration() > 0 && currReadyList.get(i).getDeadline() <= tick) {		
+				System.out.println("\nShit: "+currReadyList.get(i).getName()+" Duration: "+currReadyList.get(i).getDuration()+" Deadline: "+currReadyList.get(i).getDeadline()+" Tick: "+tick);
+				return null;
+			}			
+		}
+				
 		for(int i=0; i<tasks.size(); i++) {
 			if(tick % tasks.get(i).getPeriod() == 0) {
-				currReadyList.add(tasks.get(i).clone()); // TODO: Need deep copy
+				
+				//tasks.get(i).setDeadline(tick+tasks.get(i).getDeadline());
+				testFormat newTask = tasks.get(i).clone();
+				newTask.setDeadline(tick+newTask.getDeadline());
+				currReadyList.add(newTask);
+				
+				//currReadyList.add(tasks.get(i).clone()); // TODO: Need deep copy
 			}
 		}
 		
@@ -220,4 +234,44 @@ public class EDFAlgorithm {
 		return currReadyList;
 		
 	}
+
+	public testFormat pickEarliestTaskNew(ArrayList<testFormat> tasks) {
+		
+		int earliestDeadline = Integer.MAX_VALUE;
+		int earliestIndex = -1;
+		
+		for(int i=0; i<tasks.size();i++) {
+			if(tasks.get(i).getDeadline()<earliestDeadline) {
+				earliestIndex = i;
+			}
+		}
+		
+		return tasks.get(earliestIndex);
+	}
+	
+	
+	public void schedulePrinter(String[] schedule) {
+		
+		int n = schedule.length;
+		//boolean different = false;
+		int startTick = 1;
+		//int endTick = 0;
+		//String previousTask = schedule[0];
+		
+		for(int i = 2; i<n-2; i++) {
+			if(schedule[i] != schedule[i-1]) {
+				
+				if(schedule[i-1]==null) {
+					System.out.println("IDLE"+" ["+startTick+","+(i-1)+"]");
+				} else {
+					System.out.println(schedule[i-1]+" ["+startTick+","+(i-1)+"]");
+				}
+				startTick=i;
+			}
+		}
+		
+		
+		
+	}
+	
 }
