@@ -1,0 +1,28 @@
+
+// QUESTIONS FOR TA:
+- Polling Tasks have uneven periods (does not divide 12000), is it okay to still have hyperperiod at 12000?
+
+- How should we combine the WCRT of the EDF-algorithm from the individual polling tasks. Just take the average? Weight them out from how many tasks they each have?
+
+
+// CHECK:
+
+- Make sure that the initial parameters in Simulated Annealing, testPartitions and findOptimalPartitions are equal
+
+- Let eventWCRT also use weights, like the finalWCRT function does
+
+- findOptimalPartitions & testPartitions still use total instead of avg
+
+- Find best intial parameters for individual polling servers
+
+
+// IMPLEMENT:
+
+- Support seperation of event tasks (Maybe do that when we find optimal paritions, so only pick solutions that satisfy the seperation requirements?)
+
+- Make function to run ALL datasets and easily see which ones fail
+
+- Make function to test performance of the whole software solution/algorithm
+
+- Make print statements for troubleshooting, e.g. so we quickly can locate a bug and fix during performance testing
+
