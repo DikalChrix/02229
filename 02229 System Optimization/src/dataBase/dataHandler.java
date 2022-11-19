@@ -13,7 +13,7 @@ public class dataHandler {
 		ArrayList<testFormat> data = new ArrayList<testFormat>();
 		Scanner sc;
 		try {
-			sc = new Scanner(new File("src\\dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv"));
+			sc = new Scanner(new File("src\\dataBase\\inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv"));
 			sc.useDelimiter(",");   //sets the delimiter pattern
 			testFormat test1 = new testFormat();
 			int separationFlag = 0;

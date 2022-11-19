@@ -52,7 +52,7 @@ public class main {
 		// initial partitions. Uses simulated annealing, with start temperature of 10000
 		// and rate of 0.99
 		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo
-				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.99);
+				.findOptimalPartitions(initialPollingServerPartitions, 1000, 0.99);
 		
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions

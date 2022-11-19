@@ -236,6 +236,8 @@ public class OptimizationAlgorithm {
 				if (resultBoolean && newAvgWCRT > 0 && newAvgWCRT < bestAvgWCRT) {
 					bestPartition = neighbourPartition;
 					bestAvgWCRT = newAvgWCRT;
+					System.out.println("Best, correct partitions:");
+					printOutPartitions(bestPartition);
 					// System.out.print("Current best, correct Total Response time:
 					// "+bestTotalResponseTime+" with partition: ?");
 				}
@@ -421,7 +423,7 @@ public class OptimizationAlgorithm {
 			int bestCorrectResponseTime = resultInitial.getResponseTime();
 			
 			
-			//System.out.println("Initial budget: "+initialSolution[0]);
+			System.out.println("Initial result: "+resultInitial.isResult() + " Constraint: "+checkParameterConstraint(initialSolution));
 	
 			while (t > 0.01) {
 				int[] neighbour = generateNeighbourNew(initialSolution[0], initialSolution[1], initialSolution[2], min);
@@ -644,14 +646,43 @@ public class OptimizationAlgorithm {
 		
 		if(min==0) {
 			int[] result = {(1000-maxTimeDuration)/numberPollingServers, 1000, 1000 };
-			System.out.println("Initial generated budget: "+result[0]);
+			//System.out.println("Initial generated budget: "+result[0]);
 			return result;
 		} else {
-			int[] result = {(int) Math.ceil(min*1.2), 1000-(min*numberPollingServers+maxTimeDuration), 1000-(min*numberPollingServers+maxTimeDuration)};
-			System.out.println("Initial generated budget: "+result[0]);
+			int[] result = {(int) Math.ceil(min*1.2), (min*numberPollingServers+maxTimeDuration), (min*numberPollingServers+maxTimeDuration)};
+			//System.out.println("Initial generated budget: "+result[0]);
 			return result;
 		}
 	}
 
-
+	// Function to check seperatino constraint of event tasks is satisfied
+	public boolean checkSeperationConstraint(ArrayList<ArrayList<testFormat>> partitions) {
+		
+		for(int i = 0; i<numberPollingServers; i++) {
+			
+			int seperationNumber = 0;
+			int tasksPollingServer = partitions.get(i).size();
+			boolean firstSeperationNumberFound = false;
+			
+			for( int j = 0; j<tasksPollingServer; j++) {
+				
+				
+				if(partitions.get(i).get(j).getSeparation() != seperationNumber && partitions.get(i).get(j).getSeparation() != 0) {
+					return false;
+				}				
+				
+				if(partitions.get(i).get(j).getSeparation() != 0 && !firstSeperationNumberFound) {
+					seperationNumber =  partitions.get(i).get(j).getSeparation();
+					firstSeperationNumberFound = true;
+				}
+				
+			}
+			
+		}
+		
+		return true;
+		
+		
+	}
+	
 }
