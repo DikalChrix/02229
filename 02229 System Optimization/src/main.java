@@ -15,7 +15,6 @@ public class main {
 		// Initializes other classes:
 		dataHandler dataHandler = new dataHandler();
 		EDFAlgorithm runEDF = new EDFAlgorithm();
-		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm();
 
 		// Reads the data from the csv files, creates the task objects and puts them in
 		// an arraylist
@@ -37,21 +36,27 @@ public class main {
 		int minIdlePeriod = EDFoutput[0];
 		int EDFWCRT = EDFoutput[1];
 		System.out.println("Minimum idle period: " + minIdlePeriod);
+		
+		// Initialize the optimizatino algorithm with max required time for time tasks.
+		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod);
 
 		// Finds optimal number of polling servers, returns initial partitions of the
 		// event tasks between the polling servers
 		ArrayList<ArrayList<testFormat>> initialPollingServerPartitions = optimizeAlgo
-				.findNumberPollingServers(eventTasks, minIdlePeriod);
+				.findNumberPollingServers(eventTasks);
+		
+		// Sets the number of polling servers to use in the optimization algorithm
+		optimizeAlgo.setNumberPollingServers(initialPollingServerPartitions.size());
 
 		// Finds optimal partitions based on the number of polling servers and the
 		// initial partitions. Uses simulated annealing, with start temperature of 10000
 		// and rate of 0.99
 		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo
-				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.99, minIdlePeriod, 1000-minIdlePeriod);
-
+				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.99);
+		
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
-		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, minIdlePeriod, 1000-minIdlePeriod);
+		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions);
 
 		// Runs the EDP algorithm for each polling task using their optimal partitions
 		// and parameters and returns list of the individual WCRTs.

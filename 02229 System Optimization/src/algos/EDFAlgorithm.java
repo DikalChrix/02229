@@ -28,8 +28,8 @@ public class EDFAlgorithm {
 		//readyList.addAll(tasks);
 		
 		
-		System.out.print("\n ReadyList before loop: ");
-		printJobsListName(readyList);
+		//System.out.print("\n ReadyList before loop: ");
+		//printJobsListName(readyList);
 		
 		for(testFormat x : tasks) {
 			readyList.add(x.clone());
