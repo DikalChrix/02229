@@ -164,7 +164,7 @@ public class OptimizationAlgorithm {
 	
 	// Main function for finding optimal partitions for polling servers (Uses Simulated Annealing): 
 	public ArrayList<ArrayList<testFormat>> findOptimalPartitions(
-			ArrayList<ArrayList<testFormat>> eventTasks, int Tstart, double alpha) {
+			ArrayList<ArrayList<testFormat>> eventTasks, int Tstart, double alpha) throws Exception {
 
 		double t = Tstart;
 		int delta = 0;
@@ -173,6 +173,7 @@ public class OptimizationAlgorithm {
 		EDPAlgorithm runEDP = new EDPAlgorithm();
 		boolean resultBoolean = false;
 		int bestAvgWCRT = 0;
+		boolean correctSolutionMissing=true;
 		//int currentAvgWCRT = 0;
 		//int[] initialParameters = generateInitialParameters(n, maxTimeDuration);
 
@@ -182,6 +183,7 @@ public class OptimizationAlgorithm {
 				resultBoolean = false;
 				break;
 			} else {
+				correctSolutionMissing = false;
 				resultBoolean = true;
 				bestAvgWCRT = bestAvgWCRT + resultInitial.getResponseTime();
 			}
@@ -234,6 +236,7 @@ public class OptimizationAlgorithm {
 				//System.out.print("\t Current Total Response Time: " + currentAvgWCRT + "\t");
 
 				if (resultBoolean && newAvgWCRT > 0 && newAvgWCRT < bestAvgWCRT) {
+					correctSolutionMissing = false;
 					bestPartition = neighbourPartition;
 					bestAvgWCRT = newAvgWCRT;
 					System.out.println("Best, correct partitions:");
@@ -254,6 +257,12 @@ public class OptimizationAlgorithm {
 
 		//System.out.println("Best avg response time after parition optimization: " + bestAvgWCRT);
 
+		
+		if(correctSolutionMissing) {
+			throw new Exception("No set of partitions with all partitions satisfying the EDP-algorithm was found");
+		}
+		
+		
 		return bestPartition;
 
 	}
@@ -361,7 +370,7 @@ public class OptimizationAlgorithm {
 			}
 	
 	// Main function for finding optimal parameters for polling servers:
-	public int[][] findOptimalParameters(ArrayList<ArrayList<testFormat>> partitions) {
+	public int[][] findOptimalParameters(ArrayList<ArrayList<testFormat>> partitions) throws Exception {
 
 		// # of polling servers
 		int n = partitions.size();
@@ -407,12 +416,13 @@ public class OptimizationAlgorithm {
 				
 		// Simulated Annealing to find optimal parameters:
 		public int[] simulatedAnnealing(int[] initialSolution, int Tstart, double alpha, ArrayList<testFormat> eventTasks,
-				int min) {
+				int min) throws Exception {
 	
 			Instant startTime = Instant.now();
 	
 			double t = Tstart;
 			int delta = 0;
+			boolean correctSolutionMissing = true;
 			EDPAlgorithm runEDP = new EDPAlgorithm();
 	
 			// Test WCRT of initial solution:
@@ -421,6 +431,10 @@ public class OptimizationAlgorithm {
 	
 			int[] bestCorrectSolution = initialSolution;
 			int bestCorrectResponseTime = resultInitial.getResponseTime();
+			
+			if(resultInitial.isResult()) {
+				correctSolutionMissing = false;
+			}
 			
 			
 			System.out.println("Initial result: "+resultInitial.isResult() + " Constraint: "+checkParameterConstraint(initialSolution));
@@ -453,6 +467,7 @@ public class OptimizationAlgorithm {
 					
 					if (resultNeighbour.isResult() && resultNeighbour.getResponseTime() > 0
 							&& resultNeighbour.getResponseTime() < bestCorrectResponseTime && checkParameterConstraint(neighbour)) {
+						correctSolutionMissing = false;
 						bestCorrectSolution = neighbour;
 						bestCorrectResponseTime = resultNeighbour.getResponseTime();
 						System.out.println("Current best, correct Response time: " + bestCorrectResponseTime
@@ -472,6 +487,11 @@ public class OptimizationAlgorithm {
 	
 			// System.out.println("Simulated Annealing duration:
 			// "+Duration.between(startTime,endTime).toMinutes()+" minutes");
+			
+			if(correctSolutionMissing) {
+				throw new Exception("No set of parameters was found that satisfy the EDP-algorrithm");
+			}
+			
 	
 			return bestCorrectSolution;
 	
@@ -611,7 +631,6 @@ public class OptimizationAlgorithm {
 
 	}
 
-	
 	// Probability function for Simulated Annealing algorithm
 	public boolean probabilityFunc(int delta, double t) {
 		double probability = Math.exp(-(1 / t) * delta);
@@ -627,16 +646,8 @@ public class OptimizationAlgorithm {
 
 	}
 
-	public boolean checkParameterConstraint(int[] parameters) {
-		
-		if(parameters[0]*numberPollingServers+maxTimeDuration<parameters[2]) {
-			return true;
-		} else {
-			return false;
-		}
-		
-	}
-
+	// Generates initial parameters for the EDP-algorithm, based on the minimum supply for the partition, 
+	// total number of polling servers and max time needed to run all time tasks each 1000 ticks
 	public int[] generateInitialParameters(int min, int numberPollingServers, int maxTimeDuration) {
 		
 		
@@ -655,8 +666,19 @@ public class OptimizationAlgorithm {
 		}
 	}
 
-	// Function to check seperatino constraint of event tasks is satisfied
-	public boolean checkSeperationConstraint(ArrayList<ArrayList<testFormat>> partitions) {
+	// Constraint to ensure that EDP-parameters also lets the EDF-algorithm run the polling tasks without exceeded deadlines
+	public boolean checkParameterConstraint(int[] parameters) {
+		
+		if(parameters[0]*numberPollingServers+maxTimeDuration<parameters[2]) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
+	
+	// Function to check separation constraint of event tasks is satisfied
+	public boolean checkSeparationConstraint(ArrayList<ArrayList<testFormat>> partitions) {
 		
 		for(int i = 0; i<numberPollingServers; i++) {
 			

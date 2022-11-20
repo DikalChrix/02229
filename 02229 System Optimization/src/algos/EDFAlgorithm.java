@@ -9,7 +9,7 @@ public class EDFAlgorithm {
 	
 	int taskIndex = -1; //Remember index in of current job in readyList
 	
-	public int[] algorithm(ArrayList<testFormat> tasks) {
+	public int[] algorithm(ArrayList<testFormat> tasks, boolean disablePrints) {
 		
 		int n = tasks.size();
 		int t=0;
@@ -108,12 +108,16 @@ public class EDFAlgorithm {
 			}
 		}
 		
-		System.out.println("\nEDF WRCT: "+wcrt);
+		//System.out.println("\nEDF WRCT: "+wcrt);
 		
 		// TODO: Should also return the WCRT, not just print it 
 		int[] output = {minIdlePeriod, wcrt};
  		
-		schedulePrinter(schedule);
+		if(!disablePrints) { 
+		
+			schedulePrinter(schedule);
+		
+		}
 		
 		return output;
 	}

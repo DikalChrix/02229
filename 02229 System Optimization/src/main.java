@@ -1,3 +1,5 @@
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import algos.EDFAlgorithm;
@@ -7,11 +9,21 @@ import dataBase.dataHandler;
 import objectClasses.EDPTuple;
 import objectClasses.testFormat;
 
-//Test
+		
 
 public class main {
+	
+	
+	public static boolean disablePrints = true;
+	
 	public static void main(String[] args) throws Exception {
-		
+		int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);	
+		//testFolderSets("inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__");
+	}
+	
+	
+	
+	public static int runAlgorithm(String filepath) throws Exception {
 		// Initializes other classes:
 		dataHandler dataHandler = new dataHandler();
 		EDFAlgorithm runEDF = new EDFAlgorithm();
@@ -19,7 +31,7 @@ public class main {
 		// Reads the data from the csv files, creates the task objects and puts them in
 		// an arraylist
 		ArrayList<testFormat> mixedTasks = new ArrayList<testFormat>();
-		mixedTasks = dataHandler.readTestData();
+		mixedTasks = dataHandler.readTestData(filepath);
 
 		// Separates event and time tasks from each other
 		ArrayList<ArrayList<testFormat>> seperatedTasks = new ArrayList<ArrayList<testFormat>>();
@@ -32,7 +44,7 @@ public class main {
 		// Runs the EDF algorithm to schedule time tasks. Returns the minimum idle period
 		// per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
 		int[] EDFoutput = new int[2];
-		EDFoutput = runEDF.algorithm(timeTasks);
+		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
 		int minIdlePeriod = EDFoutput[0];
 		int EDFWCRT = EDFoutput[1];
 		System.out.println("Minimum idle period: " + minIdlePeriod);
@@ -52,7 +64,7 @@ public class main {
 		// initial partitions. Uses simulated annealing, with start temperature of 10000
 		// and rate of 0.99
 		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo
-				.findOptimalPartitions(initialPollingServerPartitions, 1000, 0.99);
+				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.999);
 		
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
@@ -73,9 +85,64 @@ public class main {
 
 		// Runs the EDF algorithm for a final time, using the initial time tasks as well
 		// as the added polling servers with their optimal parameters.
-		EDFoutput = runEDF.algorithm(timeTasks);
+		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
 		EDFWCRT = EDFoutput[1];
-		System.out.println("Final WCRT: " + EDFWCRT);
+		System.out.println("Final WCRT: " + EDFWCRT);	
+		
+		// Outputs the final WCRT, based on the last run of the EDF algorithm with the time tasks and the polling servers
+		return EDFWCRT;
 	}
 
+	public static int testReliability(String filepath, int iterations ) throws Exception {
+		
+		int totalWCRT = 0;
+		int[] WCRTs = new int[iterations];
+		Instant startTime = Instant.now();
+		
+		
+		for(int i=0; i<iterations; i++) {
+			WCRTs[i] = runAlgorithm(filepath);
+			totalWCRT = totalWCRT + WCRTs[i];
+		}
+		
+		int result = totalWCRT/iterations;
+		int median = 0;
+		if(iterations % 2 == 1) {
+			median = WCRTs[(iterations)/2];
+		} else {
+			median = ((WCRTs[iterations/2]+WCRTs[(iterations/2)+1])/2);
+		}
+		
+		int minWCRT = 0;
+		int maxWCRT = 0;
+		int stdDeviation = 0; 
+		int stdSum = 0;
+		// Calculate standard deviation. Using formula for sample:
+		for(int i=0; i<iterations; i++) {
+			stdSum = (WCRTs[i]-result)^2;
+		}
+		
+		stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
+		
+		System.out.println("Average WCRT over "+iterations+" iterations: "+result);
+		System.out.println("Minimum WCRT over "+iterations+" iterations: "+minWCRT);
+		System.out.println("Median WCRT over "+iterations+" iterations: "+median);
+		System.out.println("Maximum WCRT over "+iterations+" iterations: "+maxWCRT);
+		
+		
+		Instant endTime = Instant.now();
+		
+		 System.out.println("Test duration:"+Duration.between(startTime,endTime).toMinutes()+" minutes");
+		
+		
+		
+		return result;
+	}
+
+	public static void testFolderSets(String filepath) throws Exception {
+		
+		for(int i=0; i<100;i++) {
+			testReliability(filepath+i+"__tsk.csv", 10);
+		}
+	}
 }

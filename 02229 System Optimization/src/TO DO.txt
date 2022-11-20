@@ -25,6 +25,10 @@
 - Make function to run ALL datasets and easily see which ones fail
 
 - Make function to test performance of the whole software solution/algorithm
+	- Robustness, how is the spread of the WCRTs found by the algorithm, when run multiple times using the same dataset? (Reliability)
+	- How quickly does the algorithm find a good solution? (Speed)
+	- How good is the best solutions the algorithm can find? (Accuracy)
+	- Relation on solution quality when problem grows harder (Meaning when utilization increases; include at least in report)
 
 - Make print statements for troubleshooting, e.g. so we quickly can locate a bug and fix during performance testing
 
