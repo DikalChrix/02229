@@ -31,89 +31,130 @@ public class OptimizationAlgorithm {
 	}
 	
 	// Main function for finding optimal number of polling servers:
-	public ArrayList<ArrayList<testFormat>> findNumberPollingServers(ArrayList<testFormat> eventTasks) {
+		public ArrayList<ArrayList<testFormat>> findNumberPollingServers(ArrayList<testFormat> eventTasks) {
 
-		int bestNumberPolling = 0;
-		int bestTotalWCRT = Integer.MAX_VALUE;
-		ArrayList<ArrayList<testFormat>> bestPartitions = new ArrayList<ArrayList<testFormat>>();
+			int bestNumberPolling = 1;
+			int bestTotalWCRT = Integer.MAX_VALUE;
+			ArrayList<ArrayList<testFormat>> bestPartitions = new ArrayList<ArrayList<testFormat>>();
+			int minNumPollingServers = getSeperationNum(eventTasks);
+			for (int i = minNumPollingServers; i < 11; i++) {
 
-		for (int i = 1; i < 11; i++) {
+				// Deepcopy eventTasks
+				ArrayList<testFormat> eventTasksCopy = new ArrayList<testFormat>();
+				for (int j = 0; j < eventTasks.size(); j++) {
+					eventTasksCopy.add(eventTasks.get(j).clone());
+				}
 
-			// Deepcopy eventTasks
-			ArrayList<testFormat> eventTasksCopy = new ArrayList<testFormat>();
-			for (int j = 0; j < eventTasks.size(); j++) {
-				eventTasksCopy.add(eventTasks.get(j).clone());
+				ArrayList<ArrayList<testFormat>> currentPartitions = new ArrayList<ArrayList<testFormat>>();
+				try {
+					currentPartitions = getPartitionsPollingServers(eventTasksCopy, i);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				// optimizeAlgo.printOutPartitions(currentPartitions);
+
+				int currentWCRT = testPartitions(currentPartitions);
+
+				//System.out.println("\nCurrent response time: " + currentWCRT+ " Number polling servers "+i);
+
+				if (currentWCRT < bestTotalWCRT) {
+					bestTotalWCRT = currentWCRT;
+					bestNumberPolling = i;
+					bestPartitions = currentPartitions;
+				}
+
+				//System.out.println("Best WCRT after finding # of polling server: " + bestTotalWCRT);
+				//System.out.println("Optimal number of polling servers: " + bestNumberPolling);
+				//printOutPartitions(bestPartitions);
+
 			}
+			
+			//System.exit(0);
 
-			ArrayList<ArrayList<testFormat>> currentPartitions = getPartitionsPollingServers(eventTasksCopy, i);
-
-			// optimizeAlgo.printOutPartitions(currentPartitions);
-
-			int currentWCRT = testPartitions(currentPartitions);
-
-			//System.out.println("\nCurrent response time: " + currentWCRT+ " Number polling servers "+i);
-
-			if (currentWCRT < bestTotalWCRT) {
-				bestTotalWCRT = currentWCRT;
-				bestNumberPolling = i;
-				bestPartitions = currentPartitions;
-			}
-
-			//System.out.println("Best WCRT after finding # of polling server: " + bestTotalWCRT);
-			//System.out.println("Optimal number of polling servers: " + bestNumberPolling);
-			//printOutPartitions(bestPartitions);
+			return bestPartitions;
 
 		}
-		
-		//System.exit(0);
 
-		return bestPartitions;
-
-	}
-
-	// Helper functions:
-		// Returns partitions, based on the given event tasks and the number of polling
-		// servers requested
-	public ArrayList<ArrayList<testFormat>> getPartitionsPollingServers(ArrayList<testFormat> eventTasks,
-			int numPolling) {
-;
-
-		ArrayList<testFormat> sortedEventTasks = sortTasksDuration(eventTasks);
-		ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
-		int[] polDura = new int[numPolling];
-		if (sortedEventTasks.size() < numPolling) {
-			for (int i = 0; i < sortedEventTasks.size(); i++) {
-				ArrayList<testFormat> temp = new ArrayList<testFormat>();
-				temp.add(sortedEventTasks.get(i));
-				result.add(i, temp);
+		// Helper functions:
+			// Returns partitions, based on the given event tasks and the number of polling
+			// servers requested
+			public ArrayList<ArrayList<testFormat>> getPartitionsPollingServers(ArrayList<testFormat> mixedTasks,
+					int numPolling) throws Exception {
+				//System.out.println("Size: "+eventTasks.size());
+				dataHandler dataHandler = new dataHandler();
+				ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
+				ArrayList<testFormat> sortedEventTasks = sortTasksDuration(dataHandler.seperateTasks(mixedTasks).get(1));
+				int numSeparation = getSeperationNum(sortedEventTasks)-1;
+				int[] polDura = new int[numPolling];
+				
+				ArrayList<Integer> removeIndexs = new ArrayList<Integer>();
+				if(numSeparation > 0) {
+					for (int j = 1; j<=numSeparation;j++) {
+						ArrayList<testFormat> temp = new ArrayList<testFormat>();
+						for (int i = 0;i<sortedEventTasks.size();i++) {
+							if(sortedEventTasks.get(i).getSeparation() == j) {
+								temp.add(sortedEventTasks.get(i));
+								removeIndexs.add(i);
+								polDura[sortedEventTasks.get(i).getSeparation()-1] += sortedEventTasks.get(i).getDuration();
+							}
+						}
+						result.add(temp);
+					}
+					Collections.sort(removeIndexs,Collections.reverseOrder());
+					for (int i = 0; i<removeIndexs.size();i++) {
+						sortedEventTasks.remove((int) removeIndexs.get(i));
+					}
+					
+				}
+				for (int i = numSeparation; i < numPolling;i++) {
+					ArrayList<testFormat> temp = new ArrayList<testFormat>();
+					temp.add(sortedEventTasks.get(0));
+					polDura[i] = temp.get(0).getDuration();
+					result.add(temp);
+					sortedEventTasks.remove(0);
+				}
+				while (!sortedEventTasks.isEmpty()) {
+					int index = 0;
+					int durCheck = 15000;
+					for (int i = 0; i < numPolling; i++) {
+						if (durCheck > polDura[i]) {
+							durCheck = polDura[i];
+							index = i;
+						}
+					}
+					ArrayList<testFormat> temp = result.get(index);
+					temp.add(sortedEventTasks.get(0));
+					polDura[index] += sortedEventTasks.get(0).getDuration();
+					sortedEventTasks.remove(0);
+					result.set(index, temp);
+				}
+				/*System.out.println("-----------------------------\n");
+				for (int i = 0; i<result.size();i++) {
+					ArrayList<testFormat> temp = result.get(i);
+					int tempInt = 0;
+					for (int j = 0; j< temp.size();j++) {
+						System.out.print(temp.get(j).getName()+" is "+temp.get(j).getSeparation()+ "  ---  ");
+						tempInt += temp.get(j).getDuration();
+					}
+					System.out.println(tempInt);
+				}*/
+				if (checkSeparationConstraint(result)) {
+					return result;
+				} else {
+					throw new Exception("partition does not satisfy the seperartion constraint");
+				}
 			}
-		} else {
-			for (int i = 0; i < numPolling; i++) {
-				ArrayList<testFormat> temp = new ArrayList<testFormat>();
-				temp.add(sortedEventTasks.get(0));
-				polDura[i] = temp.get(0).getDuration();
-				result.add(temp);
-				sortedEventTasks.remove(0);
-			}
-			while (!sortedEventTasks.isEmpty()) {
-				int index = 0;
-				int durCheck = 15000;
-				for (int i = 0; i < numPolling; i++) {
-					if (durCheck > polDura[i]) {
-						durCheck = polDura[i];
-						index = i;
+			
+			public int getSeperationNum (ArrayList<testFormat> eventTasks) {
+				ArrayList<Integer> result = new ArrayList<Integer>();
+				for (int i = 0; i<eventTasks.size(); i++) {
+					if (!result.contains(eventTasks.get(i).getSeparation())) {
+						result.add(eventTasks.get(i).getSeparation());
 					}
 				}
-				ArrayList<testFormat> temp = result.get(index);
-				temp.add(sortedEventTasks.get(0));
-				polDura[index] += sortedEventTasks.get(0).getDuration();
-				sortedEventTasks.remove(0);
-				result.set(index, temp);
+				return result.size();
 			}
-		}
-
-		return result;
-	}
 
 			// Sorts the tasks based on duration
 			public ArrayList<testFormat> sortTasksDuration(ArrayList<testFormat> ET) {
