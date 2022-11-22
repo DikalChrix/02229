@@ -41,17 +41,19 @@ public class main {
 		timeTasks = seperatedTasks.get(0);
 		eventTasks = seperatedTasks.get(1);
 
+		
+		
 		// Runs the EDF algorithm to schedule time tasks. Returns the minimum idle period
 		// per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
 		int[] EDFoutput = new int[2];
 		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
 		int minIdlePeriod = EDFoutput[0];
 		int EDFWCRT = EDFoutput[1];
-		System.out.println("Minimum idle period: " + minIdlePeriod);
+		//System.out.println("Minimum idle period: " + minIdlePeriod);
 		
 		// Initialize the optimizatino algorithm with max required time for time tasks.
 		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod);
-
+		
 		// Finds optimal number of polling servers, returns initial partitions of the
 		// event tasks between the polling servers
 		ArrayList<ArrayList<testFormat>> initialPollingServerPartitions = optimizeAlgo
@@ -87,10 +89,10 @@ public class main {
 		// as the added polling servers with their optimal parameters.
 		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
 		EDFWCRT = EDFoutput[1];
-		System.out.println("Final WCRT: " + EDFWCRT);	
+		//System.out.println("Final WCRT: " + EDFWCRT);	
 		
 		// Outputs the final WCRT, based on the last run of the EDF algorithm with the time tasks and the polling servers
-		return EDFWCRT;
+		return EDFWCRT; 
 	}
 
 	public static int testReliability(String filepath, int iterations ) throws Exception {

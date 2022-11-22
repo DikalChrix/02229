@@ -8,6 +8,9 @@ import objectClasses.EDPTuple;
 import objectClasses.testFormat;
 import java.util.Random;
 import java.util.stream.IntStream;
+
+import dataBase.dataHandler;
+
 import java.time.Duration;
 import java.time.Instant;
 
@@ -72,12 +75,13 @@ public class OptimizationAlgorithm {
 	// Helper functions:
 		// Returns partitions, based on the given event tasks and the number of polling
 		// servers requested
-		public ArrayList<ArrayList<testFormat>> getPartitionsPollingServers(ArrayList<testFormat> eventTasks,
+		public ArrayList<ArrayList<testFormat>> getPartitionsPollingServers(ArrayList<testFormat> mixedTasks,
 				int numPolling) {
 	
 			// System.out.println("Size: "+eventTasks.size());
+			dataHandler dataHandler = new dataHandler();
 	
-			ArrayList<testFormat> sortedEventTasks = sortTasksDuration(eventTasks);
+			ArrayList<testFormat> sortedEventTasks = sortTasksDuration(dataHandler.seperateTasks(mixedTasks).get(1));
 			ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
 			int[] polDura = new int[numPolling];
 			if (sortedEventTasks.size() < numPolling) {
@@ -89,12 +93,10 @@ public class OptimizationAlgorithm {
 			} else {
 				for (int i = 0; i < numPolling; i++) {
 					ArrayList<testFormat> temp = new ArrayList<testFormat>();
-					temp.add(sortedEventTasks.get(i));
+					temp.add(sortedEventTasks.get(0));
 					polDura[i] = temp.get(0).getDuration();
 					result.add(temp);
-				}
-				for (int i = 0; i < numPolling; i++) {
-					sortedEventTasks.remove(i);
+					sortedEventTasks.remove(0);
 				}
 				while (!sortedEventTasks.isEmpty()) {
 					int index = 0;
