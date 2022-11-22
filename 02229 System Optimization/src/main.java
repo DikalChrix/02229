@@ -17,7 +17,8 @@ public class main {
 	public static boolean disablePrints = true;
 	
 	public static void main(String[] args) throws Exception {
-		int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);	
+		//int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);
+		int avgWCRT = testReliability("test_separation\\test_separation.csv", 1);	
 		//testFolderSets("inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__");
 	}
 	
@@ -124,7 +125,7 @@ public class main {
 			stdSum = (WCRTs[i]-result)^2;
 		}
 		
-		stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
+		//stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
 		
 		System.out.println("Average WCRT over "+iterations+" iterations: "+result);
 		System.out.println("Minimum WCRT over "+iterations+" iterations: "+minWCRT);
