@@ -51,6 +51,7 @@ public class EDFAlgorithm {
 		int minIdlePeriod = Integer.MAX_VALUE;
 		int currIdlePeriod = 0;
 		boolean idlePeriod = false;
+		int totalIdlePeriod = 0;
 		for(int tick = 1;tick<t; tick++) {
 			// Check if new job has been released:
 			readyList = getReady(tasks, readyList, tick);
@@ -73,6 +74,7 @@ public class EDFAlgorithm {
 			else if (idlePeriod)  {
 				if (currIdlePeriod<minIdlePeriod) {
 					minIdlePeriod = currIdlePeriod;
+					totalIdlePeriod = totalIdlePeriod + currIdlePeriod;
 				}
 				currIdlePeriod = 0;
 				idlePeriod = false;
@@ -111,7 +113,7 @@ public class EDFAlgorithm {
 		//System.out.println("\nEDF WRCT: "+wcrt);
 		
 		// TODO: Should also return the WCRT, not just print it 
-		int[] output = {minIdlePeriod, wcrt};
+		int[] output = {minIdlePeriod, wcrt, totalIdlePeriod};
  		
 		if(!disablePrints) { 
 		

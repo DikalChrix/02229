@@ -17,15 +17,17 @@ public class OptimizationAlgorithm {
 	private int[] initialParameters;
 	private int maxTimeDuration;
 	private int numberPollingServers;
+	private int totalMaxTimeDuration;
 	
-	public OptimizationAlgorithm(int numberPollingServers, int maxTimeDuration) {
+	public OptimizationAlgorithm(int numberPollingServers, int maxTimeDuration, int totalMaxTimeDuration) {
 		this.maxTimeDuration = maxTimeDuration;
 		this.numberPollingServers = numberPollingServers;
+		this.totalMaxTimeDuration = totalMaxTimeDuration;
 	}
 	
 	public void setNumberPollingServers(int numberPollingServers) {
 		this.numberPollingServers = numberPollingServers;
-		this.initialParameters = generateInitialParameters(0, numberPollingServers, maxTimeDuration);
+		this.initialParameters = generateInitialParameters(1, numberPollingServers, maxTimeDuration);
 	}
 	
 	// Main function for finding optimal number of polling servers:
@@ -72,49 +74,46 @@ public class OptimizationAlgorithm {
 	// Helper functions:
 		// Returns partitions, based on the given event tasks and the number of polling
 		// servers requested
-		public ArrayList<ArrayList<testFormat>> getPartitionsPollingServers(ArrayList<testFormat> eventTasks,
-				int numPolling) {
-	
-			// System.out.println("Size: "+eventTasks.size());
-	
-			ArrayList<testFormat> sortedEventTasks = sortTasksDuration(eventTasks);
-			ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
-			int[] polDura = new int[numPolling];
-			if (sortedEventTasks.size() < numPolling) {
-				for (int i = 0; i < sortedEventTasks.size(); i++) {
-					ArrayList<testFormat> temp = new ArrayList<testFormat>();
-					temp.add(sortedEventTasks.get(i));
-					result.add(i, temp);
-				}
-			} else {
-				for (int i = 0; i < numPolling; i++) {
-					ArrayList<testFormat> temp = new ArrayList<testFormat>();
-					temp.add(sortedEventTasks.get(i));
-					polDura[i] = temp.get(0).getDuration();
-					result.add(temp);
-				}
-				for (int i = 0; i < numPolling; i++) {
-					sortedEventTasks.remove(i);
-				}
-				while (!sortedEventTasks.isEmpty()) {
-					int index = 0;
-					int durCheck = 15000;
-					for (int i = 0; i < numPolling; i++) {
-						if (durCheck > polDura[i]) {
-							durCheck = polDura[i];
-							index = i;
-						}
-					}
-					ArrayList<testFormat> temp = result.get(index);
-					temp.add(sortedEventTasks.get(0));
-					polDura[index] += sortedEventTasks.get(0).getDuration();
-					sortedEventTasks.remove(0);
-					result.set(index, temp);
-				}
+	public ArrayList<ArrayList<testFormat>> getPartitionsPollingServers(ArrayList<testFormat> eventTasks,
+			int numPolling) {
+;
+
+		ArrayList<testFormat> sortedEventTasks = sortTasksDuration(eventTasks);
+		ArrayList<ArrayList<testFormat>> result = new ArrayList<ArrayList<testFormat>>();
+		int[] polDura = new int[numPolling];
+		if (sortedEventTasks.size() < numPolling) {
+			for (int i = 0; i < sortedEventTasks.size(); i++) {
+				ArrayList<testFormat> temp = new ArrayList<testFormat>();
+				temp.add(sortedEventTasks.get(i));
+				result.add(i, temp);
 			}
-	
-			return result;
+		} else {
+			for (int i = 0; i < numPolling; i++) {
+				ArrayList<testFormat> temp = new ArrayList<testFormat>();
+				temp.add(sortedEventTasks.get(0));
+				polDura[i] = temp.get(0).getDuration();
+				result.add(temp);
+				sortedEventTasks.remove(0);
+			}
+			while (!sortedEventTasks.isEmpty()) {
+				int index = 0;
+				int durCheck = 15000;
+				for (int i = 0; i < numPolling; i++) {
+					if (durCheck > polDura[i]) {
+						durCheck = polDura[i];
+						index = i;
+					}
+				}
+				ArrayList<testFormat> temp = result.get(index);
+				temp.add(sortedEventTasks.get(0));
+				polDura[index] += sortedEventTasks.get(0).getDuration();
+				sortedEventTasks.remove(0);
+				result.set(index, temp);
+			}
 		}
+
+		return result;
+	}
 
 			// Sorts the tasks based on duration
 			public ArrayList<testFormat> sortTasksDuration(ArrayList<testFormat> ET) {
@@ -213,6 +212,9 @@ public class OptimizationAlgorithm {
 			// Test newly generated solution;
 			for (int i = 0; i < numberPollingServers; i++) {
 				EDPTuple resultInitial = runEDP.algorithm(initialParameters[0], initialParameters[1], initialParameters[2], eventTasks.get(i));
+				
+				//System.out.println("Result: "+resultInitial.isResult());
+				
 				if (!resultInitial.isResult()) {
 					resultBoolean = false;
 					//System.out.print("\t " + resultInitial.isResult() + " \t");
@@ -235,7 +237,7 @@ public class OptimizationAlgorithm {
 
 				//System.out.print("\t Current Total Response Time: " + currentAvgWCRT + "\t");
 
-				if (resultBoolean && newAvgWCRT > 0 && newAvgWCRT < bestAvgWCRT) {
+				if (resultBoolean && newAvgWCRT > 0 && newAvgWCRT < bestAvgWCRT && checkSeparationConstraint(neighbourPartition)) {
 					correctSolutionMissing = false;
 					bestPartition = neighbourPartition;
 					bestAvgWCRT = newAvgWCRT;
@@ -390,7 +392,7 @@ public class OptimizationAlgorithm {
 			//System.out.println("\n Min supply: "+min);
 			//printOutPartitions(partitions);
 
-			int[] optimalParameters = simulatedAnnealing(initialParameters, 100000, 0.5, partitions.get(i), min);
+			int[] optimalParameters = simulatedAnnealing(initialParameters, 10000, 0.99, partitions.get(i), min);
 			result[0][i] = optimalParameters[0]; // Budget
 			result[1][i] = optimalParameters[1]; // Period
 			result[2][i] = optimalParameters[2]; // Deadline
@@ -440,7 +442,7 @@ public class OptimizationAlgorithm {
 			System.out.println("Initial result: "+resultInitial.isResult() + " Constraint: "+checkParameterConstraint(initialSolution));
 	
 			while (t > 0.01) {
-				int[] neighbour = generateNeighbourNew(initialSolution[0], initialSolution[1], initialSolution[2], min);
+				int[] neighbour = generateNeighbourNewRandom(initialSolution[0], initialSolution[1], initialSolution[2], min);
 	
 				// Test WCRT of neighbour solution:
 				EDPTuple resultNeighbour = runEDP.algorithm(neighbour[0], neighbour[1], neighbour[2], eventTasks);
@@ -462,7 +464,7 @@ public class OptimizationAlgorithm {
 	
 					
 					//System.out.println("Result: "+resultNeighbour.isResult());
-					//System.out.println("Budget: "+neighbour[0]+" Period "+neighbour[1]+" Deadline: "+neighbour[2]);
+					System.out.println("Budget: "+neighbour[0]+" Period "+neighbour[1]+" Deadline: "+neighbour[2]);
 					//System.out.println("Special constraint: "+checkParameterConstraint(neighbour));
 					
 					if (resultNeighbour.isResult() && resultNeighbour.getResponseTime() > 0
@@ -522,7 +524,7 @@ public class OptimizationAlgorithm {
 					resArray[0] = res;
 					return resArray;
 				case 1: // Change period
-					if (operation == 0 && period != min && deadline < period && budget < period) {
+					if (operation == 0 && period != min && budget < period) {
 						res = period - 1;
 					} else if (operation == 1 && period < 12000) { // Hyperperiod
 						res = period + 1;
@@ -534,7 +536,7 @@ public class OptimizationAlgorithm {
 				case 2: // Change deadline
 					if (operation == 0 && deadline != min && budget < deadline - 1) {
 						res = deadline - 1;
-					} else if (operation == 1 && deadline < period) {
+					} else if (operation == 1) {
 						res = deadline + 1;
 					} else {
 						res = deadline;
@@ -660,8 +662,14 @@ public class OptimizationAlgorithm {
 			//System.out.println("Initial generated budget: "+result[0]);
 			return result;
 		} else {
-			int[] result = {(int) Math.ceil(min*1.2), (min*numberPollingServers+maxTimeDuration), (min*numberPollingServers+maxTimeDuration)};
+			//int[] result = {(int) Math.ceil(min*1.2), (min*numberPollingServers+maxTimeDuration), (min*numberPollingServers+maxTimeDuration)};
 			//System.out.println("Initial generated budget: "+result[0]);
+			int budget = (12000-totalMaxTimeDuration)/numberPollingServers; 
+			//int[] result = {(int) (budget*0.5), (int) (budget*0.75), (int) (budget*0.75)};
+			//int[] result = {(1000-maxTimeDuration)/numberPollingServers, 1000, 1000 };
+			int[] result = {100, 550, 550};
+			//int[] result = {budget, budget, budget};
+			System.out.println("Initial generated parameters: Budget: "+result[0]+" Period: "+result[1]+" Deadline: "+result[2]);
 			return result;
 		}
 	}
@@ -669,7 +677,7 @@ public class OptimizationAlgorithm {
 	// Constraint to ensure that EDP-parameters also lets the EDF-algorithm run the polling tasks without exceeded deadlines
 	public boolean checkParameterConstraint(int[] parameters) {
 		
-		if(parameters[0]*numberPollingServers+maxTimeDuration<parameters[2]) {
+		if(parameters[0]*numberPollingServers+maxTimeDuration/2<parameters[2] && parameters[0]*numberPollingServers+maxTimeDuration/2<parameters[1]) {
 			return true;
 		} else {
 			return false;
@@ -706,5 +714,55 @@ public class OptimizationAlgorithm {
 		
 		
 	}
+	
+	// Test function:
+	public int[] generateNeighbourNewRandom(int budget, int period, int deadline, int min) {
+		
+		// Pick random parameter to change
+		Random rand = new Random();
+		int choice = (int) rand.nextInt(3);
+		int randomJump = (int) rand.nextInt(50);
+
+		// Pick to either increment or decrement
+		int operation = (int) rand.nextInt(1);
+		int res;
+		int[] resArray = { budget, period, deadline };
+		switch (choice) {
+		case 0: // Change budget
+			if (operation == 0 && budget > min) {
+				res = budget - randomJump;
+			} else if (operation == 1 ) {
+				res = budget + randomJump;
+			} else {
+				res = budget;
+			}
+			//System.out.println("reduced");
+			
+			resArray[0] = res;
+			return resArray;
+		case 1: // Change period
+			if (operation == 0 && (period - randomJump) > min ) {
+				res = period - randomJump;
+			} else if (operation == 1 && period < 12000) { // Hyperperiod
+				res = period + randomJump;
+			} else {
+				res = period;
+			}
+			resArray[1] = res;
+			return resArray;
+		case 2: // Change deadline
+			if (operation == 0 && deadline-randomJump > min) {
+				res = deadline - randomJump;
+			} else if (operation == 1) {
+				res = deadline + randomJump;
+			} else {
+				res = deadline;
+			}
+			resArray[2] = res;
+			return resArray;
+		}
+		return resArray;
+	}
+	
 	
 }

@@ -14,10 +14,10 @@ import objectClasses.testFormat;
 public class main {
 	
 	
-	public static boolean disablePrints = true;
+	public static boolean disablePrints = false;
 	
 	public static void main(String[] args) throws Exception {
-		int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);	
+		int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 10);	
 		//testFolderSets("inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__");
 	}
 	
@@ -43,14 +43,15 @@ public class main {
 
 		// Runs the EDF algorithm to schedule time tasks. Returns the minimum idle period
 		// per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
-		int[] EDFoutput = new int[2];
+		int[] EDFoutput = new int[3];
 		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
 		int minIdlePeriod = EDFoutput[0];
 		int EDFWCRT = EDFoutput[1];
+		int totalIdlePeriod = EDFoutput[2];
 		System.out.println("Minimum idle period: " + minIdlePeriod);
 		
 		// Initialize the optimizatino algorithm with max required time for time tasks.
-		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod);
+		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod, 12000-totalIdlePeriod);
 
 		// Finds optimal number of polling servers, returns initial partitions of the
 		// event tasks between the polling servers
@@ -64,7 +65,7 @@ public class main {
 		// initial partitions. Uses simulated annealing, with start temperature of 10000
 		// and rate of 0.99
 		ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo
-				.findOptimalPartitions(initialPollingServerPartitions, 10000, 0.999);
+				.findOptimalPartitions(initialPollingServerPartitions, 1000, 0.99);
 		
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
@@ -113,19 +114,29 @@ public class main {
 			median = ((WCRTs[iterations/2]+WCRTs[(iterations/2)+1])/2);
 		}
 		
-		int minWCRT = 0;
-		int maxWCRT = 0;
+		int minWCRT = Integer.MAX_VALUE;
+		int maxWCRT = -Integer.MAX_VALUE;
 		int stdDeviation = 0; 
 		int stdSum = 0;
 		// Calculate standard deviation. Using formula for sample:
 		for(int i=0; i<iterations; i++) {
 			stdSum = (WCRTs[i]-result)^2;
+			
+			if(WCRTs[i]<minWCRT) {
+				minWCRT=WCRTs[i];
+			}
+			
+			if(WCRTs[i]>maxWCRT) {
+				maxWCRT=WCRTs[i];
+			}
+			
 		}
 		
 		stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
 		
 		System.out.println("Average WCRT over "+iterations+" iterations: "+result);
 		System.out.println("Minimum WCRT over "+iterations+" iterations: "+minWCRT);
+		System.out.println("Standard deviation over "+iterations+" iterations: "+stdDeviation);
 		System.out.println("Median WCRT over "+iterations+" iterations: "+median);
 		System.out.println("Maximum WCRT over "+iterations+" iterations: "+maxWCRT);
 		
