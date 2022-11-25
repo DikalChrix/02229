@@ -40,19 +40,22 @@ public class EDPAlgorithm {
 		int responseTime = -1;
 		
 		
+		double demand = 0;
+		double supply = 0;
+		
 		for(testFormat x : tasks) {
 			int tick = 0;
 			responseTime = x.getDeadline()+1;
 			
 			while(tick<=hyperPeriod) {
 				
-				double supply = alpha*(tick-delta);
+				supply = alpha*(tick-delta);
 				
 				if(supply<0) {
 					supply = 0;	
 				}
 				
-				double demand = 0;
+				demand = 0;
 				
 				//System.out.println(" Supply: "+supply+"   Demand: "+demand+" ");
 				
@@ -73,7 +76,7 @@ public class EDPAlgorithm {
 			if (responseTime>x.getDeadline()) {
 				result.setResponseTime(responseTime);
 				//System.out.print("Deadline exceeded: Response Time:"+responseTime+" Deadline:"+x.getDeadline());
-				
+				//System.out.println("\t Demand: "+(supply-demand));
 				return result;
 			}		
 		}

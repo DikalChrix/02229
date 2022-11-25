@@ -56,8 +56,8 @@ public class EDFAlgorithm {
 			// Check if new job has been released:
 			readyList = getReady(tasks, readyList, tick);
 			
-			//System.out.print("\n ReadyList at start of cycle "+tick+": ");
-			//printJobsListName(readyList);
+			System.out.print("\n ReadyList at start of cycle "+tick+": ");
+			printJobsListName(readyList);
 			/*
 			if (tick==4100) {
 				System.exit(0);
@@ -72,9 +72,10 @@ public class EDFAlgorithm {
 			}
 			
 			else if (idlePeriod)  {
+				totalIdlePeriod = totalIdlePeriod + currIdlePeriod;
+				//System.out.println("currIdlePeriod "+currIdlePeriod);
 				if (currIdlePeriod<minIdlePeriod) {
 					minIdlePeriod = currIdlePeriod;
-					totalIdlePeriod = totalIdlePeriod + currIdlePeriod;
 				}
 				currIdlePeriod = 0;
 				idlePeriod = false;
