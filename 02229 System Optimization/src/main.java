@@ -20,7 +20,8 @@ public class main {
 		//int result = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);	
 		//int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);
 		//int avgWCRT = testReliability("test_separation\\test_separation.csv", 2);
-		int avgWCRT = testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__99__tsk.csv", 2);
+		// WORKS: int avgWCRT = testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 1);
+		int avgWCRT = testReliability("test_separation\\inf_30_60\\taskset__1643188356-a_0.3-b_0.6-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 1);
 		//testFolderSets("inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__");
 	}
 	
@@ -64,6 +65,7 @@ public class main {
 				.findNumberPollingServers(eventTasks);
 		
 		// Sets the number of polling servers to use in the optimization algorithm
+		//System.out.println("Number of polling servers: "+initialPollingServerPartitions.size());
 		optimizeAlgo.setNumberPollingServers(initialPollingServerPartitions.size());
 		//calculateDemand(timeTasks);
 
@@ -76,7 +78,7 @@ public class main {
 		
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
-		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions);
+		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, eventTasks);
 
 		// Runs the EDP algorithm for each polling task using their optimal partitions
 		// and parameters and returns list of the individual WCRTs.
@@ -91,6 +93,9 @@ public class main {
 		// Converts polling servers to time tasks for a final run of the EDF-algorithm
 		ArrayList<testFormat> finalTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
 
+		// Calculates utilization, false if >1 (Processor is then overloaded)
+		System.out.println(" Utilization:"+optimizeAlgo.calculateUtilization(finalTimeTasks));
+		
 		// Runs the EDF algorithm for a final time, using the initial time tasks as well
 		// as the added polling servers with their optimal parameters.
 		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
@@ -147,7 +152,10 @@ public class main {
 		
 		int avgUtilization = totalUtilization/iterations;
 		
-		stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
+		
+		if(iterations>1) {
+			stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
+		}
 		
 		System.out.println("Average WCRT over "+iterations+" iterations: "+avgWCRT);
 		System.out.println("Minimum WCRT over "+iterations+" iterations: "+minWCRT);
@@ -184,14 +192,14 @@ public class main {
 						periodicDemands[((period-1000)/1000)-1] = periodicDemands[((period-1000)/1000)-1] + timeTasks.get(j).getDuration(); 
 					}
 			}
-				System.out.println("Demand at "+period+": "+periodicDemands[((period-1000)/1000)-1]);	
+				//System.out.println("Demand at "+period+": "+periodicDemands[((period-1000)/1000)-1]);	
 		}
 		
 		int[] result = new int [12];
 		
 		for(int i=1; i<13; i++) {
 			result[i-1] = periodicDemands[0]*(i/2)+periodicDemands[1]*(i/3)+periodicDemands[2]*(i/4); 
-			System.out.println("Demand at "+(i*1000)+": "+result[i-1]);
+			//System.out.println("Demand at "+(i*1000)+": "+result[i-1]);
 		}
 		
 		
