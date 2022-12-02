@@ -21,7 +21,7 @@ public class main {
 		//int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);
 		//int avgWCRT = testReliability("test_separation\\test_separation.csv", 2);
 		// WORKS: int avgWCRT = testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 1);
-		int avgWCRT = testReliability("test_separation\\inf_30_60\\taskset__1643188356-a_0.3-b_0.6-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 1);
+		testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);
 		//testFolderSets("inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__");
 	}
 	
@@ -40,11 +40,18 @@ public class main {
 		// Separates event and time tasks from each other
 		ArrayList<ArrayList<testFormat>> seperatedTasks = new ArrayList<ArrayList<testFormat>>();
 		ArrayList<testFormat> timeTasks = new ArrayList<testFormat>();
+		ArrayList<testFormat> timeTasksCopy = new ArrayList<testFormat>();
 		ArrayList<testFormat> eventTasks = new ArrayList<testFormat>();
 		seperatedTasks = dataHandler.seperateTasks(mixedTasks);
 		timeTasks = seperatedTasks.get(0);
 		eventTasks = seperatedTasks.get(1);
 
+		
+		for(int i=0; i<timeTasks.size(); i++) {
+			timeTasksCopy.add(timeTasks.get(i).clone());
+		}
+		
+		
 		// Runs the EDF algorithm to schedule time tasks. Returns the minimum idle period
 		// per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
 		int[] EDFoutput = new int[3];
@@ -57,7 +64,7 @@ public class main {
 		//System.exit(0);
 		
 		// Initialize the optimizatino algorithm with max required time for time tasks.
-		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod, 12000-totalIdlePeriod, calculateDemand(timeTasks));
+		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod, 12000-totalIdlePeriod, calculateDemand(timeTasks), timeTasks);
 
 		// Finds optimal number of polling servers, returns initial partitions of the
 		// event tasks between the polling servers
@@ -85,7 +92,7 @@ public class main {
 		int[] eventWCRTs = optimizeAlgo.optimalPollingServerRun(optimalPartitions, optimalParameters);
 
 		// Calculates the average WCRT of all the polling servers
-		int EDPWCRT = optimizeAlgo.finalEventWCRT(eventWCRTs, optimalPartitions, eventTasks);
+		int EDPWCRT = (int) optimizeAlgo.finalEventWCRT(eventWCRTs, optimalPartitions, eventTasks);
 
 		// Calculates the final, average WCRT of the whole dataset
 		int finalWCRT = optimizeAlgo.finalWCRT(EDFWCRT, EDPWCRT, timeTasks.size(), eventTasks.size());
@@ -112,33 +119,57 @@ public class main {
 		
 		int totalWCRT = 0;
 		int[] WCRTs = new int[iterations];
-		Instant startTime = Instant.now();
 		int[] utilization = new int[iterations]; 
 		int totalUtilization = 0;
 		
+		// Speed analysis variables
+		long[] secondsArray = new long[iterations];
+		long maxDuration = -Integer.MAX_VALUE;
+		long minDuration = Integer.MAX_VALUE;
+		long avgDuration = 0;
+		long medianDuration = 0;
+		double stdDeviationDuration = 0;
+		long totalDuration = 0;
+		
+		
 		for(int i=0; i<iterations; i++) {
+			Instant startTime = Instant.now();
 			int[] result = runAlgorithm(filepath);
+			Instant endTime = Instant.now();
+			secondsArray[i] = Duration.between(startTime,endTime).toSeconds();
 			WCRTs[i] = result[0];
 			utilization[i] = result[1];
 			totalWCRT = totalWCRT + WCRTs[i];
 			totalUtilization = totalUtilization + utilization[i];
+			totalDuration = totalDuration + secondsArray[i];
+				
 		}
 		
 		int avgWCRT = totalWCRT/iterations;
 		int median = 0;
 		if(iterations % 2 == 1) {
 			median = WCRTs[(iterations)/2];
+			medianDuration = secondsArray[(iterations)/2];
 		} else {
 			median = ((WCRTs[(iterations/2)-1]+WCRTs[(iterations/2)])/2);
+			medianDuration = ((secondsArray[(iterations/2)-1]+secondsArray[(iterations/2)])/2);
 		}
 		
 		int minWCRT = Integer.MAX_VALUE;
 		int maxWCRT = -Integer.MAX_VALUE;
-		int stdDeviation = 0; 
+		double stdDeviation = 0; 
 		int stdSum = 0;
+		
+		avgDuration = totalDuration/iterations;
+		
+		
+		long stdSumDuration = 0;
+		
+		
 		// Calculate standard deviation. Using formula for sample:
 		for(int i=0; i<iterations; i++) {
 			stdSum = (WCRTs[i]-avgWCRT)^2;
+			stdSumDuration = (secondsArray[i]-avgDuration)^2;
 			
 			if(WCRTs[i]<minWCRT) {
 				minWCRT=WCRTs[i];
@@ -148,26 +179,39 @@ public class main {
 				maxWCRT=WCRTs[i];
 			}
 			
+			if(secondsArray[i]<minDuration) {
+				minDuration = secondsArray[i];
+			}
+			
+			if(secondsArray[i]>maxDuration) {
+				maxDuration = secondsArray[i];
+			}
+			
 		}
 		
 		int avgUtilization = totalUtilization/iterations;
 		
 		
 		if(iterations>1) {
-			stdDeviation = (int) Math.floor(Math.sqrt(stdSum/(iterations-1)));
+			stdDeviation =  Math.floor(Math.sqrt(stdSum/(iterations-1)));
+			stdDeviationDuration = Math.floor(Math.sqrt(stdSumDuration/(iterations-1)));
 		}
 		
+		System.out.println("********* TEST RESULTS *********");
+		
+		System.out.println("*** Reliability/Robustness analysis results: ");
 		System.out.println("Average WCRT over "+iterations+" iterations: "+avgWCRT);
 		System.out.println("Minimum WCRT over "+iterations+" iterations: "+minWCRT);
 		System.out.println("Standard deviation over "+iterations+" iterations: "+stdDeviation);
 		System.out.println("Median WCRT over "+iterations+" iterations: "+median);
 		System.out.println("Maximum WCRT over "+iterations+" iterations: "+maxWCRT);
 		
-		
-		
-		Instant endTime = Instant.now();
-		
-		 System.out.println("Test duration:"+Duration.between(startTime,endTime).toMinutes()+" minutes");
+		System.out.println("*** Speed analysis results: ");
+		System.out.println("Average duration in seconds over "+iterations+" iterations: "+avgDuration);
+		System.out.println("Minimum duraiton in seconds over "+iterations+" iterations: "+minDuration);
+		System.out.println("Standard deviation in seconds over "+iterations+" iterations: "+stdDeviationDuration);
+		System.out.println("Median duration in seconds over "+iterations+" iterations: "+medianDuration);
+		System.out.println("Maximum duration in seconds over "+iterations+" iterations: "+maxDuration);
 		
 	
 		return avgWCRT;

@@ -18,7 +18,7 @@ public class dataHandler {
 			testFormat test1 = new testFormat();
 			int separationFlag = 0;
 			String split = sc.nextLine();
-			if (split.contains("separation")) {
+			if (split.contains("separation") || split.contains("seperation")) {
 				separationFlag = 1;
 			}
 			
