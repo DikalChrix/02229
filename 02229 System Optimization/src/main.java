@@ -17,17 +17,12 @@ public class main {
 	public static boolean disablePrints = false;
 	
 	public static void main(String[] args) throws Exception {
-		//int result = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);	
-		//int avgWCRT = testReliability("inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__1__tsk.csv", 1);
-		//int avgWCRT = testReliability("test_separation\\test_separation.csv", 2);
-		// WORKS: int avgWCRT = testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 1);
 		testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);
-		//testFolderSets("inf_20_20\\taskset__1643188157-a_0.2-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__");
 	}
 	
 	
 	
-	public static int[] runAlgorithm(String filepath) throws Exception {
+	public static double[] runAlgorithm(String filepath) throws Exception {
 		// Initializes other classes:
 		dataHandler dataHandler = new dataHandler();
 		EDFAlgorithm runEDF = new EDFAlgorithm();
@@ -83,6 +78,7 @@ public class main {
 		// and rate of 0.99
 		//ArrayList<ArrayList<testFormat>> optimalPartitions = optimizeAlgo.findOptimalPartitions(initialPollingServerPartitions, 1000, 0.99);
 		
+		
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
 		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, eventTasks);
@@ -101,16 +97,31 @@ public class main {
 		ArrayList<testFormat> finalTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
 
 		// Calculates utilization, false if >1 (Processor is then overloaded)
-		System.out.println(" Utilization:"+optimizeAlgo.calculateUtilization(finalTimeTasks));
+		System.out.println("Utilization:"+optimizeAlgo.calculateUtilization(finalTimeTasks));
 		
 		// Runs the EDF algorithm for a final time, using the initial time tasks as well
 		// as the added polling servers with their optimal parameters.
 		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
+		
+		// If the optimized parameters result in an unscheduable set of tasks, go back and use the initial paramters, which we know works
+		int counter = 100;
+		while(EDFoutput == null) {
+			//Try a small change to the parameters to allow them to be scheduled
+			optimalParameters = optimizeAlgo.redo(optimalParameters, optimalPartitions);
+			ArrayList<testFormat> safeTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
+			EDFoutput = runEDF.algorithm(safeTimeTasks, disablePrints);
+			counter = counter -1;
+			if(counter==0) {
+				throw new Exception("A feasible solution could not be found");
+			}
+		}
+		
+		System.out.println("Utilization:"+optimizeAlgo.calculateUtilization(finalTimeTasks));
 		EDFWCRT = EDFoutput[1];
 		System.out.println("Final WCRT: " + EDFWCRT);
 		
-		int utilization = 100-(EDFoutput[2]/12000);
-		int[] result = {EDFWCRT, utilization}; 
+		double utilization = optimizeAlgo.calculateUtilization(finalTimeTasks);
+		double[] result = {EDFWCRT, utilization}; 
 		// Outputs the final WCRT, based on the last run of the EDF algorithm with the time tasks and the polling servers
 		return result;
 	}
@@ -119,8 +130,12 @@ public class main {
 		
 		int totalWCRT = 0;
 		int[] WCRTs = new int[iterations];
-		int[] utilization = new int[iterations]; 
-		int totalUtilization = 0;
+		double[] utilization = new double[iterations]; 
+		double totalUtilization = 0;
+		double minUtilization = Integer.MAX_VALUE;
+		double maxUtilization = -Integer.MAX_VALUE;
+		double medianUtilization = 0;
+		double stdDeviationUtilization = 0;
 		
 		// Speed analysis variables
 		long[] secondsArray = new long[iterations];
@@ -134,10 +149,10 @@ public class main {
 		
 		for(int i=0; i<iterations; i++) {
 			Instant startTime = Instant.now();
-			int[] result = runAlgorithm(filepath);
+			double[] result = runAlgorithm(filepath);
 			Instant endTime = Instant.now();
 			secondsArray[i] = Duration.between(startTime,endTime).toSeconds();
-			WCRTs[i] = result[0];
+			WCRTs[i] = (int) result[0];
 			utilization[i] = result[1];
 			totalWCRT = totalWCRT + WCRTs[i];
 			totalUtilization = totalUtilization + utilization[i];
@@ -150,9 +165,11 @@ public class main {
 		if(iterations % 2 == 1) {
 			median = WCRTs[(iterations)/2];
 			medianDuration = secondsArray[(iterations)/2];
+			medianUtilization = utilization[(iterations)/2];
 		} else {
 			median = ((WCRTs[(iterations/2)-1]+WCRTs[(iterations/2)])/2);
 			medianDuration = ((secondsArray[(iterations/2)-1]+secondsArray[(iterations/2)])/2);
+			medianUtilization = ((utilization[(iterations/2)-1]+utilization[(iterations/2)])/2);
 		}
 		
 		int minWCRT = Integer.MAX_VALUE;
@@ -187,14 +204,22 @@ public class main {
 				maxDuration = secondsArray[i];
 			}
 			
+			if(utilization[i]<minUtilization) {
+				minUtilization = utilization[i];
+			}
+			
+			if(utilization[i]>maxUtilization) {
+				maxUtilization = utilization[i];
+			}
+			
 		}
 		
-		int avgUtilization = totalUtilization/iterations;
+		double avgUtilization = totalUtilization/iterations;
 		
 		
 		if(iterations>1) {
-			stdDeviation =  Math.floor(Math.sqrt(stdSum/(iterations-1)));
-			stdDeviationDuration = Math.floor(Math.sqrt(stdSumDuration/(iterations-1)));
+			stdDeviation =  Math.sqrt(stdSum/(iterations-1));
+			stdDeviationDuration = Math.sqrt(stdSumDuration/(iterations-1));
 		}
 		
 		System.out.println("********* TEST RESULTS *********");
@@ -212,6 +237,14 @@ public class main {
 		System.out.println("Standard deviation in seconds over "+iterations+" iterations: "+stdDeviationDuration);
 		System.out.println("Median duration in seconds over "+iterations+" iterations: "+medianDuration);
 		System.out.println("Maximum duration in seconds over "+iterations+" iterations: "+maxDuration);
+		
+		System.out.println("*** Utilization analysis results: ");
+		System.out.println("Average utilization over "+iterations+" iterations: "+avgUtilization);
+		System.out.println("Minimum utilization over "+iterations+" iterations: "+minDuration);
+		System.out.println("Standard utilization over "+iterations+" iterations: "+stdDeviationDuration);
+		System.out.println("Median utilization over "+iterations+" iterations: "+medianDuration);
+		System.out.println("Maximum utilization over "+iterations+" iterations: "+maxDuration);
+		
 		
 	
 		return avgWCRT;
@@ -246,9 +279,6 @@ public class main {
 			//System.out.println("Demand at "+(i*1000)+": "+result[i-1]);
 		}
 		
-		
-		
-	
 		return result;
 	}
 

@@ -7,9 +7,13 @@ import objectClasses.testFormat;
 
 public class EDFAlgorithm {
 	
+	
+	boolean disablePrints;
 	int taskIndex = -1; //Remember index in of current job in readyList
 	
 	public int[] algorithm(ArrayList<testFormat> tasks, boolean disablePrints) {
+		
+		this.disablePrints = disablePrints;
 		
 		int n = tasks.size();
 		int t=0;
@@ -63,6 +67,10 @@ public class EDFAlgorithm {
 				System.exit(0);
 			}
 			*/
+			if(readyList == null) {
+				return null;
+			}
+			
 			
 			
 			if(readyList.size()==0) {
@@ -184,7 +192,9 @@ public class EDFAlgorithm {
 		
 		for(int i=0; i<currReadyList.size(); i++) {
 			if(currReadyList.get(i).getDuration() > 0 && currReadyList.get(i).getDeadline() <= tick) {		
-				System.out.println("\nShit: "+currReadyList.get(i).getName()+" Duration: "+currReadyList.get(i).getDuration()+" Deadline: "+currReadyList.get(i).getDeadline()+" Tick: "+tick);
+				
+				System.out.println(" Scheduling impossible with current parameters, instead using initial ones");
+				
 				return null;
 			}			
 		}
