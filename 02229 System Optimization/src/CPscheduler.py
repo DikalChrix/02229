@@ -7,7 +7,8 @@ from CPdataHandler import *
 def main():
     """Minimal jobshop problem."""
     # Data.
-    jobs_data = CPDataHandler('dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv')
+    #   jobs_data = CPDataHandler('dataBase\\inf_10_10\\taskset__1643188013-a_0.1-b_0.1-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv')
+    jobs_data = CPDataHandler('dataBase\\inf_70_20\\taskset__1643188613-a_0.7-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv')
     machines_count = 1
     all_machines = range(machines_count)
     # Computes horizon dynamically as the sum of all durations.
@@ -31,12 +32,12 @@ def main():
             machine = 0
             duration = task[1]
             start_time = task[0]
-            #priority = task[2]
+            priority = task[2]
             deadline = task[3]
             suffix = '_%i_%i' % (job_id, task_id)
             start_var = model.NewIntVar(start_time, horizon, 'start' + suffix) #start_var = model.NewIntVar(0, horizon, 'start' + suffix)
             end_var = model.NewIntVar(0, deadline, 'end' + suffix)
-            priority_var = model.NewIntVar(0, 7, 'priority' + suffix)
+            #priority_var = model.NewIntVar(0, 7, 'priority' + suffix)
             deadline_var = model.NewIntVar(0, horizon, 'deadline' + suffix)
             #start_time_var = model.NewIntVar(0, horizon, 'start_time' + suffix)
 
@@ -45,9 +46,10 @@ def main():
             all_tasks[job_id, task_id] = task_type(start=start_var,
                                                    end=end_var,
                                                    interval=interval_var,
-                                                   priority=priority_var,
+                                                   priority=priority,
                                                    #start_time=start_time_var,
-                                                   deadline=deadline_var)
+                                                   deadline=deadline_var
+                                                   )
             machine_to_intervals[machine].append(interval_var)
 
     # Create and add disjunctive constraints.
@@ -60,9 +62,14 @@ def main():
         for task_id in range(len(job) - 1):
             model.Add(all_tasks[job_id, task_id +
                                 1].start >= all_tasks[job_id, task_id].end)
+            for x, job_comp in enumerate(jobs_data):
 
-            #model.Add(all_tasks[job_id, task_id].start < all_tasks[x, y].start).OnlyEnforeIf(all_tasks[job_id, task_id].priority < all_tasks[x, y].priority)
-
+                for y in range(job_id,len(job_comp) - 1):
+                    if x==job_id and y==task_id:
+                        continue
+                    if all_tasks[job_id, task_id].priority < all_tasks[x, y].priority:
+                        model.Add(all_tasks[job_id, task_id].start < all_tasks[x, y].start)#.OnlyEnforceIf(all_tasks[job_id, task_id].priority_comp < all_tasks[x, y].priority_comp)
+                        print(f'testtask priority: {all_tasks[job_id, task_id].priority} start {all_tasks[job_id, task_id].start}: compared task: {all_tasks[x, y].priority} start: {all_tasks[x, y].start} ')
             #model.Add(all_tasks[job_id, task_id].end < all_tasks[job_id, task_id].deadline)
             #model.Add((all_tasks[ ,task_id].end < all_tasks[*, task_id+1].start)) #& (all_tasks[job_id, task_id].priority > all_tasks[job_id, task_id+1].priority))
             #model.Add(all_tasks[job_id, task_id].start_time < all_tasks[job_id, task_id+1].start_time)
@@ -82,6 +89,7 @@ def main():
     status = solver.Solve(model)
 
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        total_tasks = 0
         print('Solution:')
         # Create one list of assigned tasks per machine.
         assigned_jobs = collections.defaultdict(list)
@@ -115,6 +123,7 @@ def main():
                 # Add spaces to output to align columns.
                 sol_line += '%-15s' % sol_tmp
                 sol_line_tuple += ''.join(map(str, (name,sol_tmp))) + '\n'
+                total_tasks += 1
             sol_line += '\n'
             sol_line_tasks += '\n'
             #output += sol_line_tasks
@@ -124,6 +133,8 @@ def main():
         # Finally print the solution found.
         print(f'Optimal Schedule Length: {solver.ObjectiveValue()}')
         print(output + '\n')
+        print(f'amount of jobs: {len(jobs_data)}')
+        print(f'total tasks: {total_tasks}')
     else:
         print('No solution found.')
 
