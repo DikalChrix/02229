@@ -221,10 +221,10 @@ public class OptimizationAlgorithm {
 	public int[][] findOptimalParameters(ArrayList<ArrayList<testFormat>> partitions, ArrayList<testFormat> eventTasks)
 			throws Exception {
 
+		
+		int[][] initialGeneratedParameters = findIntialSolutionUpper(partitions);
+		
 		for (int i = 0; i < numberPollingServers; i++) {
-
-			int[][] initialGeneratedParameters = findIntialSolutionUpper(partitions);
-
 			for (int j = 0; j < 3; j++) {
 				allParameters[j][i] = initialGeneratedParameters[j][i];
 				initialParameters[j][i] = initialGeneratedParameters[j][i];
@@ -233,7 +233,7 @@ public class OptimizationAlgorithm {
 		}
 		checkUtilizationConstraint(allParameters);
 		if (checkParameterDemand(allParameters, demands)) {
-			System.out.println("Works");
+			System.out.println("Initial solution should work");
 		}
 
 		// return testedParameters;
@@ -943,8 +943,7 @@ public class OptimizationAlgorithm {
 						bestParameters[0] = i;
 						bestParameters[1] = staticParameters;
 						bestParameters[2] = staticParameters;
-						System.out.println(" Parameters: " + i + " " + staticParameters + " " + staticParameters + " "
-								+ testResult.getResponseTime() + " " + testResult.isResult());
+						//System.out.println(" Parameters: " + i + " " + staticParameters + " " + staticParameters + " "+ testResult.getResponseTime() + " " + testResult.isResult());
 						return bestParameters;
 					} else {
 						counter = counter - 1;
@@ -989,7 +988,13 @@ public class OptimizationAlgorithm {
 			}
 			counter++;
 		}
-		System.out.println("SUCCESS!");
+		//System.out.println("SUCCESS!");
+		
+		for (int i = 0; i < numberPollingServers; i++) {
+			System.out.println("Initial parameters for polling server " + i + " : " + testInitialParameters[0][i] + " " + testInitialParameters[1][i] + " "+ testInitialParameters[2][i]);
+		}
+		
+		
 		return testInitialParameters;
 
 	}
