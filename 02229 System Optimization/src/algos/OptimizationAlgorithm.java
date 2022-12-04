@@ -14,7 +14,7 @@ import java.time.Instant;
 
 public class OptimizationAlgorithm {
 
-	int[] initialValues = { 250, 1200, 1200 }; // 250, 1000, 1000
+	int[] initialValues = { 250, 1200, 1200 };
 	private int[][] initialParameters;
 	private int numberPollingServers;
 	private int[] demands;
@@ -22,7 +22,7 @@ public class OptimizationAlgorithm {
 	ArrayList<ArrayList<int[]>> acceptableParameters = new ArrayList<ArrayList<int[]>>();
 	private double utilizationTimeTasks;
 
-	public OptimizationAlgorithm(int numberPollingServers, int maxTimeDuration, int totalMaxTimeDuration, int[] demands,
+	public OptimizationAlgorithm(int numberPollingServers, int[] demands,
 			ArrayList<testFormat> timeTasks) {
 		this.numberPollingServers = numberPollingServers;
 		this.demands = demands;
@@ -454,7 +454,7 @@ public class OptimizationAlgorithm {
 		System.out.println("Initial paramters: " + bestParameters[0] + " " + bestParameters[1] + " " + bestParameters[2]
 				+ " Initial WCRT: " + bestWCRT);
 
-		while (t > Tstart / 100) {
+		while (true) {
 
 			// Search neighbour
 			int[] neighbourParameters = generateNeighbourNew(currentParameters[0], currentParameters[1],
@@ -499,8 +499,8 @@ public class OptimizationAlgorithm {
 			// System.out.println("Temperature: "+t);
 
 			Instant endTime = Instant.now();
-			if (Duration.between(startTime, endTime).toSeconds() > 0) {
-				// break;
+			if (Duration.between(startTime, endTime).toSeconds() > 300) {
+				break;
 			}
 
 		}
@@ -1094,8 +1094,7 @@ public class OptimizationAlgorithm {
 						currentWCRT = finalEventWCRT(WCRTs, partitions, eventTasks);
 
 						for (int k = 0; k < numberPollingServers; k++) {
-							System.out.print(currentParameters[0][k] + " " + currentParameters[1][k] + " "
-									+ currentParameters[2][k] + "\t \t");
+							//System.out.print(currentParameters[0][k] + " " + currentParameters[1][k] + " "	+ currentParameters[2][k] + "\t \t");
 						}
 						// System.out.println("Current average WCRT: " + currentWCRT+" Best:
 						// "+bestWCRT);

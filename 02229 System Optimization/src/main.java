@@ -59,7 +59,7 @@ public class main {
 		//System.exit(0);
 		
 		// Initialize the optimizatino algorithm with max required time for time tasks.
-		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, 1000-minIdlePeriod, 12000-totalIdlePeriod, calculateDemand(timeTasks), timeTasks);
+		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, calculateDemand(timeTasks), timeTasks);
 
 		// Finds optimal number of polling servers, returns initial partitions of the
 		// event tasks between the polling servers
