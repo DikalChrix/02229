@@ -17,7 +17,7 @@ public class main {
 	public static boolean disablePrints = true;
 	
 	public static void main(String[] args) throws Exception {
-		testReliability("test_separation\\inf_30_50\\taskset__1643188338-a_0.3-b_0.5-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);
+		testReliability("test_separation\\inf_20_60\\taskset__1643188229-a_0.2-b_0.6-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);
 	}
 	
 	
