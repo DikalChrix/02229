@@ -14,10 +14,10 @@ import objectClasses.testFormat;
 public class main {
 	
 	
-	public static boolean disablePrints = false;
+	public static boolean disablePrints = true;
 	
 	public static void main(String[] args) throws Exception {
-		testReliability("test_separation\\inf_40_40\\taskset__1643188429-a_0.4-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);
+		testReliability("test_separation\\inf_50_30\\taskset__1643188502-a_0.5-b_0.3-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv", 10);
 	}
 	
 	
@@ -240,10 +240,10 @@ public class main {
 		
 		System.out.println("*** Utilization analysis results: ");
 		System.out.println("Average utilization over "+iterations+" iterations: "+avgUtilization);
-		System.out.println("Minimum utilization over "+iterations+" iterations: "+minDuration);
-		System.out.println("Standard utilization over "+iterations+" iterations: "+stdDeviationDuration);
-		System.out.println("Median utilization over "+iterations+" iterations: "+medianDuration);
-		System.out.println("Maximum utilization over "+iterations+" iterations: "+maxDuration);
+		System.out.println("Minimum utilization over "+iterations+" iterations: "+minUtilization);
+		System.out.println("Standard utilization over "+iterations+" iterations: "+stdDeviationUtilization);
+		System.out.println("Median utilization over "+iterations+" iterations: "+medianUtilization);
+		System.out.println("Maximum utilization over "+iterations+" iterations: "+maxUtilization);
 		
 		
 	
@@ -276,7 +276,6 @@ public class main {
 		
 		for(int i=1; i<13; i++) {
 			result[i-1] = periodicDemands[0]*(i/2)+periodicDemands[1]*(i/3)+periodicDemands[2]*(i/4); 
-			//System.out.println("Demand at "+(i*1000)+": "+result[i-1]);
 		}
 		
 		return result;

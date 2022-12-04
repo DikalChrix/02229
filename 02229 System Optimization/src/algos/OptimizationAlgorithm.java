@@ -631,11 +631,13 @@ public class OptimizationAlgorithm {
 			if (acceptableParametersSizes[i] > max) {
 				max = acceptableParametersSizes[i];
 			}
+			/*
+			
 			for (int j = 0; j < acceptableParameters.get(i).size(); j++) {
 				System.out.print(Arrays.toString(acceptableParameters.get(i).get(j)) + " \t");
 			}
 			System.out.println("");
-
+			*/
 			int trueParameterArray[] = new int[3];
 			// Initialize with best parameters for all polling servers:
 			for (int j = 0; j < 3; j++) {
@@ -770,20 +772,23 @@ public class OptimizationAlgorithm {
 			int pollingServer = (int) (rand.nextInt(parameters[0].length));
 			int choice = (int) (rand.nextInt(3));
 			int operation = (int) (rand.nextInt(2));
+			EDPAlgorithm runEDP = new EDPAlgorithm();
 
 			if (operation == 0) {
 				parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
 				int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
 						parameters[2][pollingServer] };
-				if (!checkSoftParameterConstraints(temp)) {
+				if (!checkSoftParameterConstraints(temp) || !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
 					parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
+					continue;
 				}
 			} else {
 				parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
 				int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
 						parameters[2][pollingServer] };
-				if (!checkSoftParameterConstraints(temp)) {
+				if (!checkSoftParameterConstraints(temp) || !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
 					parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
+					continue;
 				}
 			}
 
@@ -793,6 +798,7 @@ public class OptimizationAlgorithm {
 				int[] WCRTs = optimalPollingServerRun(partitions, parameters);
 				currentWCRT = (int) finalEventWCRT(WCRTs, partitions, eventTasks);
 				// System.out.println("First check ok:"+bestWCRT);
+				
 
 				if (currentWCRT < bestWCRT) {
 					System.out.println(" Best found parameters: " + currentWCRT + "");
@@ -1032,11 +1038,12 @@ public class OptimizationAlgorithm {
 					}
 				}
 			}
-
+			/*
 			for (int j = 0; j < allParameters.get(i).size(); j++) {
 				System.out.print(Arrays.toString(allParameters.get(i).get(j)) + " \t");
 			}
 			System.out.println("");
+			*/
 		}
 
 		for (int i = 0; i < 100; i++) {
@@ -1104,9 +1111,10 @@ public class OptimizationAlgorithm {
 								bestParameters[0][k] = currentParameters[0][k];
 								bestParameters[1][k] = currentParameters[1][k];
 								bestParameters[2][k] = currentParameters[2][k];
-								System.out.print(" Best " + i + " " + j + ": " + bestParameters[0][h] + " "
-										+ bestParameters[1][h] + " " + bestParameters[2][h] + " \t");
+								System.out.print(" Best " + i + " " + j + ": " + bestParameters[0][k] + " "
+										+ bestParameters[1][k] + " " + bestParameters[2][k] + " \t");
 							}
+							System.out.println("");
 							bestWCRT = currentWCRT;
 
 						}
