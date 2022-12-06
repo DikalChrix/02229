@@ -656,9 +656,9 @@ public class OptimizationAlgorithm {
 			for (int j = 0; j < 3; j++) {
 				currentParameters[j][i] = acceptableParameters.get(i).get(acceptableParametersSizes[i] - 1)[j];
 
-				// trueParameterArray[j] = currentParameters[j][i];
+				trueParameterArray[j] = currentParameters[j][i];
 			}
-			// trueParameters.get(i).add(trueParameterArray);
+			trueParameters.get(i).add(trueParameterArray);
 
 		}
 
