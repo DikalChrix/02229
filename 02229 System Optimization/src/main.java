@@ -180,7 +180,7 @@ public class main {
 			 */
 		
 		int count = 1;
-		if(EDFoutput == null) {
+		while(EDFoutput == null) {
 			// Try again
 			
 			System.out.println(" Failed, re-trying");
