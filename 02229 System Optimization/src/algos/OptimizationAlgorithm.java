@@ -23,8 +23,7 @@ public class OptimizationAlgorithm {
 	ArrayList<ArrayList<int[]>> acceptableParameters = new ArrayList<ArrayList<int[]>>();
 	private double utilizationTimeTasks;
 
-	public OptimizationAlgorithm(int numberPollingServers, int[] demands,
-			ArrayList<testFormat> timeTasks) {
+	public OptimizationAlgorithm(int numberPollingServers, int[] demands, ArrayList<testFormat> timeTasks) {
 		this.numberPollingServers = numberPollingServers;
 		this.demands = demands;
 		this.utilizationTimeTasks = calculateUtilization(timeTasks);
@@ -222,9 +221,8 @@ public class OptimizationAlgorithm {
 	public int[][] findOptimalParameters(ArrayList<ArrayList<testFormat>> partitions, ArrayList<testFormat> eventTasks)
 			throws Exception {
 
-		
 		int[][] initialGeneratedParameters = findIntialSolutionUpper(partitions);
-		
+
 		for (int i = 0; i < numberPollingServers; i++) {
 			for (int j = 0; j < 3; j++) {
 				allParameters[j][i] = initialGeneratedParameters[j][i];
@@ -611,26 +609,26 @@ public class OptimizationAlgorithm {
 
 		int[][] bestParameters = new int[3][numberPollingServers];
 		int[][] currentParameters = new int[3][numberPollingServers];
-		
-		// 
-		//System.out.println("Acceptable Parameters at finetuning: ");
-		for(int i = 0; i<numberPollingServers; i++ ) {
-			for(int j =0; j<acceptableParameters.get(i).size(); j++) {
-				//System.out.print(acceptableParameters.get(i).get(j)[0]+" "+acceptableParameters.get(i).get(j)[1]+" "+acceptableParameters.get(i).get(j)[2]+"\t");
+
+		//
+		// System.out.println("Acceptable Parameters at finetuning: ");
+		for (int i = 0; i < numberPollingServers; i++) {
+			for (int j = 0; j < acceptableParameters.get(i).size(); j++) {
+				// System.out.print(acceptableParameters.get(i).get(j)[0]+"
+				// "+acceptableParameters.get(i).get(j)[1]+"
+				// "+acceptableParameters.get(i).get(j)[2]+"\t");
 			}
-			//System.out.println("");
+			// System.out.println("");
 		}
-		
 
 		for (int i = 0; i < numberPollingServers; i++) {
 
 			// Removed duplicates from collected parameters:
-			
-			//acceptableParameters.get(i).remove(0);
-			
+
+			// acceptableParameters.get(i).remove(0);
+
 			for (int j = 0; j < acceptableParameters.get(i).size(); j++) {
-				
-				
+
 				int[] temp = acceptableParameters.get(i).get(j);
 
 				for (int k = j + 1; k < acceptableParameters.get(i).size(); k++) {
@@ -648,54 +646,49 @@ public class OptimizationAlgorithm {
 				max = acceptableParametersSizes[i];
 			}
 			/*
-			
-			for (int j = 0; j < acceptableParameters.get(i).size(); j++) {
-				System.out.print(Arrays.toString(acceptableParameters.get(i).get(j)) + " \t");
-			}
-			System.out.println("");
-			*/
+			 * 
+			 * for (int j = 0; j < acceptableParameters.get(i).size(); j++) {
+			 * System.out.print(Arrays.toString(acceptableParameters.get(i).get(j)) +
+			 * " \t"); } System.out.println("");
+			 */
 			int trueParameterArray[] = new int[3];
 			// Initialize with best parameters for all polling servers:
 			for (int j = 0; j < 3; j++) {
 				currentParameters[j][i] = acceptableParameters.get(i).get(acceptableParametersSizes[i] - 1)[j];
 
-				//trueParameterArray[j] = currentParameters[j][i];
+				// trueParameterArray[j] = currentParameters[j][i];
 			}
-				//trueParameters.get(i).add(trueParameterArray);
-
-			
+			// trueParameters.get(i).add(trueParameterArray);
 
 		}
 
 		/*
-		
-		for (int i = 0; i < numberPollingServers; i++) {
-			bestParameters[0][i] = currentParameters[0][i];
-			bestParameters[1][i] = currentParameters[1][i];
-			bestParameters[2][i] = currentParameters[2][i];
-
-		}
-		*/
+		 * 
+		 * for (int i = 0; i < numberPollingServers; i++) { bestParameters[0][i] =
+		 * currentParameters[0][i]; bestParameters[1][i] = currentParameters[1][i];
+		 * bestParameters[2][i] = currentParameters[2][i];
+		 * 
+		 * }
+		 */
 
 		for (int i = 0; i < numberPollingServers; i++) {
 			// System.out.println(" Best found parameters for polling server "+i+":
 			// "+bestParameters[0][i]+" "+bestParameters[1][i]+" "+bestParameters[2][i]);
 			Collections.reverse(acceptableParameters.get(i));
 		}
-		
-		/*
-		double bestWCRT = Integer.MAX_VALUE;
-		checkUtilizationConstraint(currentParameters);
 
-		if (checkParameterDemand(currentParameters, demands) && checkUtilizationConstraint(currentParameters)) {
-			int[] WCRTs = optimalPollingServerRun(partitions, currentParameters);
-			bestWCRT = finalEventWCRT(WCRTs, partitions, eventTasks);
-			// System.out.println("First check ok:"+bestWCRT);
-		} else {
-			bestWCRT = Integer.MAX_VALUE;
-		}
-		
-		*/
+		/*
+		 * double bestWCRT = Integer.MAX_VALUE;
+		 * checkUtilizationConstraint(currentParameters);
+		 * 
+		 * if (checkParameterDemand(currentParameters, demands) &&
+		 * checkUtilizationConstraint(currentParameters)) { int[] WCRTs =
+		 * optimalPollingServerRun(partitions, currentParameters); bestWCRT =
+		 * finalEventWCRT(WCRTs, partitions, eventTasks); //
+		 * System.out.println("First check ok:"+bestWCRT); } else { bestWCRT =
+		 * Integer.MAX_VALUE; }
+		 * 
+		 */
 		double bestWCRT = Integer.MAX_VALUE;
 		for (int i = 1; i < max; i++) {
 
@@ -713,7 +706,8 @@ public class OptimizationAlgorithm {
 				}
 
 				for (int h = 0; h < numberPollingServers; h++) {
-					//System.out.print(" Testing " + i + " " + j + ": " + currentParameters[0][h] +" "+ currentParameters[1][h] + " " + currentParameters[2][h]);
+					// System.out.print(" Testing " + i + " " + j + ": " + currentParameters[0][h]
+					// +" "+ currentParameters[1][h] + " " + currentParameters[2][h]);
 					// "+(checkParameterDemand(currentParameters, demands))+" \t");
 				}
 
@@ -731,18 +725,19 @@ public class OptimizationAlgorithm {
 						trueParameterArray[h] = currentParameters[h][j];
 					}
 					trueParameters.get(j).add(trueParameterArray);
-					
-					//System.out.println("Added to polling server "+j+" : ");
-					//System.out.println(trueParameterArray[0]+" "+trueParameterArray[1]+" "+trueParameterArray[2]);
-					
-					
+
+					// System.out.println("Added to polling server "+j+" : ");
+					// System.out.println(trueParameterArray[0]+" "+trueParameterArray[1]+"
+					// "+trueParameterArray[2]);
 
 					if (currentWCRT < bestWCRT) {
 						for (int h = 0; h < numberPollingServers; h++) {
 							bestParameters[0][h] = currentParameters[0][h];
 							bestParameters[1][h] = currentParameters[1][h];
 							bestParameters[2][h] = currentParameters[2][h];
-							//System.out.print(" Best " + i + " " + j + ": " + bestParameters[0][h] + " "+bestParameters[1][h] + " " + bestParameters[2][h]+" "+(checkParameterDemand(currentParameters, demands))+" \t");
+							// System.out.print(" Best " + i + " " + j + ": " + bestParameters[0][h] + "
+							// "+bestParameters[1][h] + " " + bestParameters[2][h]+"
+							// "+(checkParameterDemand(currentParameters, demands))+" \t");
 						}
 						bestWCRT = currentWCRT;
 
@@ -762,19 +757,19 @@ public class OptimizationAlgorithm {
 		checkUtilizationConstraint(bestParameters);
 
 		// Do mutation
-		//True parameters [
-		
+		// True parameters [
+
 		/*
-		
-		System.out.println("True parameters sent to mutation: ");
-		for(int i=0; i<numberPollingServers; i++) {
-			
-			for(int j = 0; j<trueParameters.get(i).size(); j++) {
-				System.out.println("True parameters for polling server "+i+" :"+trueParameters.get(i).get(j)[0]+" "+trueParameters.get(i).get(j)[1]+" "+trueParameters.get(i).get(j)[2]+"\t");
-			}
-		}
-		
-		*/
+		 * 
+		 * System.out.println("True parameters sent to mutation: "); for(int i=0;
+		 * i<numberPollingServers; i++) {
+		 * 
+		 * for(int j = 0; j<trueParameters.get(i).size(); j++) {
+		 * System.out.println("True parameters for polling server "+i+" :"
+		 * +trueParameters.get(i).get(j)[0]+" "+trueParameters.get(i).get(j)[1]+" "
+		 * +trueParameters.get(i).get(j)[2]+"\t"); } }
+		 * 
+		 */
 
 		int[][] mutatedParameters = mutationAlgorithm(trueParameters, acceptableParametersSizes, bestParameters,
 				bestWCRT, partitions, eventTasks);
@@ -804,9 +799,10 @@ public class OptimizationAlgorithm {
 		for (int i = 0; i < 10000; i++) {
 
 			for (int j = 0; j < numberPollingServers; j++) {
-				//System.out.print(parameters[0][j] + " " + parameters[1][j] + " " + parameters[2][j] + " \t");
+				// System.out.print(parameters[0][j] + " " + parameters[1][j] + " " +
+				// parameters[2][j] + " \t");
 			}
-			//System.out.println();
+			// System.out.println();
 
 			Random rand = new Random();
 			int pollingServer = (int) (rand.nextInt(parameters[0].length));
@@ -818,7 +814,8 @@ public class OptimizationAlgorithm {
 				parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
 				int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
 						parameters[2][pollingServer] };
-				if (!checkParameterConstraints(temp) || !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
+				if (!checkParameterConstraints(temp)
+						|| !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
 					parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
 					continue;
 				}
@@ -826,7 +823,8 @@ public class OptimizationAlgorithm {
 				parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
 				int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
 						parameters[2][pollingServer] };
-				if (!checkParameterConstraints(temp) || !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
+				if (!checkParameterConstraints(temp)
+						|| !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
 					parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
 					continue;
 				}
@@ -838,7 +836,6 @@ public class OptimizationAlgorithm {
 				int[] WCRTs = optimalPollingServerRun(partitions, parameters);
 				currentWCRT = (int) finalEventWCRT(WCRTs, partitions, eventTasks);
 				// System.out.println("First check ok:"+bestWCRT);
-				
 
 				if (currentWCRT < bestWCRT) {
 					System.out.println(" Best found parameters: " + currentWCRT + "");
@@ -983,7 +980,9 @@ public class OptimizationAlgorithm {
 						bestParameters[0] = i;
 						bestParameters[1] = staticParameters;
 						bestParameters[2] = staticParameters;
-						//System.out.println(" Parameters: " + i + " " + staticParameters + " " + staticParameters + " "+ testResult.getResponseTime() + " " + testResult.isResult());
+						// System.out.println(" Parameters: " + i + " " + staticParameters + " " +
+						// staticParameters + " "+ testResult.getResponseTime() + " " +
+						// testResult.isResult());
 						return bestParameters;
 					} else {
 						counter = counter - 1;
@@ -1028,13 +1027,13 @@ public class OptimizationAlgorithm {
 			}
 			counter++;
 		}
-		//System.out.println("SUCCESS!");
-		
+		// System.out.println("SUCCESS!");
+
 		for (int i = 0; i < numberPollingServers; i++) {
-			System.out.println("Initial parameters for polling server " + i + " : " + testInitialParameters[0][i] + " " + testInitialParameters[1][i] + " "+ testInitialParameters[2][i]);
+			System.out.println("Initial parameters for polling server " + i + " : " + testInitialParameters[0][i] + " "
+					+ testInitialParameters[1][i] + " " + testInitialParameters[2][i]);
 		}
-		
-		
+
 		return testInitialParameters;
 
 	}
@@ -1075,17 +1074,13 @@ public class OptimizationAlgorithm {
 
 			// Removed duplicates from collected parameters:
 			/*
-			
-			for (int j = 0; j < allParameters.get(i).size(); j++) {
-				int[] temp = allParameters.get(i).get(j);
-
-				for (int k = j + 1; k < allParameters.get(i).size(); k++) {
-					if (temp == allParameters.get(i).get(k)) {
-						allParameters.get(i).remove(k);
-					}
-				}
-			}
-			*/
+			 * 
+			 * for (int j = 0; j < allParameters.get(i).size(); j++) { int[] temp =
+			 * allParameters.get(i).get(j);
+			 * 
+			 * for (int k = j + 1; k < allParameters.get(i).size(); k++) { if (temp ==
+			 * allParameters.get(i).get(k)) { allParameters.get(i).remove(k); } } }
+			 */
 			for (int j = 0; j < allParameters.get(i).size(); j++) {
 				System.out.print(Arrays.toString(allParameters.get(i).get(j)) + " \t");
 			}
@@ -1147,7 +1142,8 @@ public class OptimizationAlgorithm {
 						currentWCRT = finalEventWCRT(WCRTs, partitions, eventTasks);
 
 						for (int k = 0; k < numberPollingServers; k++) {
-							//System.out.print(currentParameters[0][k] + " " + currentParameters[1][k] + " "	+ currentParameters[2][k] + "\t \t");
+							// System.out.print(currentParameters[0][k] + " " + currentParameters[1][k] + "
+							// " + currentParameters[2][k] + "\t \t");
 						}
 						// System.out.println("Current average WCRT: " + currentWCRT+" Best:
 						// "+bestWCRT);
@@ -1228,7 +1224,7 @@ public class OptimizationAlgorithm {
 	}
 
 	public int[][] redo(int[][] parameters, ArrayList<ArrayList<testFormat>> partitions) {
-		int highestParameter = -Integer.MAX_VALUE;
+		int lowestParameter = Integer.MAX_VALUE;
 		int parameterType = 0;
 		int pollingServer = 0;
 		boolean[] noTouch = new boolean[numberPollingServers];
@@ -1241,8 +1237,8 @@ public class OptimizationAlgorithm {
 			// Reduce the highest period/deadline with 1
 			for (int i = 0; i < numberPollingServers; i++) {
 				for (int j = 1; j < 3; j++) {
-					if (parameters[j][i] > highestParameter && noTouch[i] != true) {
-						highestParameter = parameters[j][i];
+					if (parameters[j][i] < lowestParameter && noTouch[i] != true) {
+						lowestParameter = parameters[j][i];
 						parameterType = j;
 						pollingServer = i;
 					}
@@ -1250,19 +1246,19 @@ public class OptimizationAlgorithm {
 			}
 
 			// Peform the reduction
-			parameters[parameterType][pollingServer] = parameters[parameterType][pollingServer] - 1;
+			parameters[parameterType][pollingServer] = parameters[parameterType][pollingServer] +1;
 
 			// Check if the new parameters are correct
 			for (int i = 0; i < numberPollingServers; i++) {
 
-				if (checkParameterDemand(parameters, demands)) {
+				if (checkParameterDemand(parameters, demands) ) {
 
 					if (runEDP.algorithm(parameters[0][i], parameters[0][i], parameters[0][i], partitions.get(i))
 							.isResult()) {
-						continue;
+							return parameters;
 					} else {
 						// Reverse
-						parameters[parameterType][pollingServer] = parameters[parameterType][pollingServer] + 1;
+						parameters[parameterType][pollingServer] = parameters[parameterType][pollingServer] -1;
 						noTouch[pollingServer] = true;
 
 						break; // Try again
@@ -1274,6 +1270,53 @@ public class OptimizationAlgorithm {
 		}
 
 		return parameters;
+	}
+
+	public int[][] redo2(int[][] parameters, ArrayList<ArrayList<testFormat>> partitions, ArrayList<testFormat> eventTasks, ArrayList<testFormat> timeTasks, double initialUtilization ) {
+
+		double currentUtilization = initialUtilization;
+		double prevUtilization = initialUtilization;
+		int[][] currentParameters = parameters;
+
+		Random rand = new Random();
+		int pollingServer = (int) (rand.nextInt(parameters[0].length));
+		int choice = (int) (rand.nextInt(3));
+		int operation = (int) (rand.nextInt(2));
+		EDPAlgorithm runEDP = new EDPAlgorithm();
+
+		while (true) {
+
+			if (operation == 0) {
+				parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
+				int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
+						parameters[2][pollingServer] };
+				if (!checkParameterConstraints(temp)
+						|| !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
+					parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
+					continue;
+				}
+			} else {
+				parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
+				int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
+						parameters[2][pollingServer] };
+				if (!checkParameterConstraints(temp)
+						|| !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
+					parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
+					continue;
+				}
+			}
+
+			
+			ArrayList<testFormat> finalTimeTasks = createPollingServerTasks(timeTasks, parameters);
+
+			System.out.println("Utilization: "+calculateUtilization(finalTimeTasks));
+			
+			if (checkParameterDemand(parameters, demands) && calculateUtilization(finalTimeTasks) < currentUtilization) {
+				return parameters;
+
+			}
+
+		}
 	}
 
 	// NOT IN USE
