@@ -15,7 +15,7 @@ public class main {
 
 	public static void main(String[] args) throws Exception {
 		testReliability(
-				"test_separation\\inf_20_40\\taskset__1643188193-a_0.2-b_0.4-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv",
+				"test_separation\\inf_30_60\\taskset__1643188356-a_0.3-b_0.6-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv",
 				10);
 	}
 
@@ -81,23 +81,11 @@ public class main {
 		// partitions
 		int[][] optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, eventTasks);
 
-		// Runs the EDP algorithm for each polling task using their optimal partitions
-		// and parameters and returns list of the individual WCRTs.
-		int[] eventWCRTs = optimizeAlgo.optimalPollingServerRun(optimalPartitions, optimalParameters);
-
-		// Calculates the average WCRT of all the polling servers
-		int EDPWCRT = (int) optimizeAlgo.finalEventWCRT(eventWCRTs, optimalPartitions, eventTasks);
-
-		// Calculates the final, average WCRT of the whole dataset
-		int finalWCRT = optimizeAlgo.finalWCRT(EDFWCRT, EDPWCRT, timeTasks.size(), eventTasks.size());
-
 		// Converts polling servers to time tasks for a final run of the EDF-algorithm
 		ArrayList<testFormat> finalTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
 
 		// Calculates utilization, false if >1 (Processor is then overloaded)
 		System.out.println("Utilization:" + optimizeAlgo.calculateUtilization(finalTimeTasks));
-
-		double currentUtilization = optimizeAlgo.calculateUtilization(finalTimeTasks);
 
 		// Runs the EDF algorithm for a final time, using the initial time tasks as well
 		// as the added polling servers with their optimal parameters.
@@ -183,17 +171,33 @@ public class main {
 		while(EDFoutput == null) {
 			// Try again
 			
+			ArrayList<testFormat> timeTasksCopy2 = new ArrayList<testFormat>();
+			
+			//System.out.println("TimeTasksSize: "+timeTasks.size());
+			//System.out.println("TimeTasksCopySize: "+timeTasksCopy.size());
+			//System.out.println("TimeTasksCopy2Size: "+timeTasksCopy2.size());
+			
+			for (int j = 0; j < timeTasksCopy.size(); j++) {
+				//System.out.println("J: "+j);
+				timeTasksCopy2.add(timeTasksCopy.get(j).clone());
+			}
+			
 			System.out.println(" Failed, re-trying");
 			
+			
+			optimizeAlgo = new OptimizationAlgorithm(0, calculateDemand(timeTasksCopy2), timeTasksCopy2);
+			
+			optimizeAlgo.setNumberPollingServers(initialPollingServerPartitions.size());
+			
 			optimalParameters = optimizeAlgo.findOptimalParameters(optimalPartitions, eventTasks);
-			finalTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
+			finalTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasksCopy2, optimalParameters);
 
 			// Calculates utilization, false if >1 (Processor is then overloaded)
 			System.out.println("Utilization:" + optimizeAlgo.calculateUtilization(finalTimeTasks));
 
 			// Runs the EDF algorithm for a final time, using the initial time tasks as well
 			// as the added polling servers with their optimal parameters.
-			EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
+			EDFoutput = runEDF.algorithm(timeTasksCopy2, disablePrints);
 			
 			
 			count ++;
