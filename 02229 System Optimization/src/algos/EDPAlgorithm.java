@@ -7,19 +7,14 @@ import objectClasses.testFormat;
 
 public class EDPAlgorithm {
 
-	
-	//TODO: Find optimal polling budget and period, for now period=deadline and budget=½*period)
-	//Budget is the ticks allowed to be run each period.
-	public EDPTuple algorithm(int pollingBudget, int pollingPeriod, int pollingDeadline, ArrayList<testFormat> tasks) {
+		public EDPTuple algorithm(int pollingBudget, int pollingPeriod, int pollingDeadline, ArrayList<testFormat> tasks) {
 		
 		
 		//Setup
 		EDFAlgorithm edfAlgorithm = new EDFAlgorithm();
 		int delta = pollingPeriod + pollingDeadline - 2* pollingBudget;
-		//System.out.println("Delta: "+delta);
 		
 		double alpha = (double) pollingBudget/ (double) pollingPeriod; //Long for fractions?
-		//System.out.println("Aplha: "+alpha);
 		int n = tasks.size();
 		EDPTuple result = new EDPTuple(false, 0);
 			
@@ -36,7 +31,6 @@ public class EDPAlgorithm {
 		}
 		
 		int hyperPeriod = edfAlgorithm.lcmMultiple(periodArray);
-		//System.out.println("EDP hyperPeriod: "+hyperPeriod);
 		int responseTime = -1;
 		
 		
@@ -57,8 +51,6 @@ public class EDPAlgorithm {
 				
 				demand = 0;
 				
-				//System.out.println(" Supply: "+supply+"   Demand: "+demand+" ");
-				
 				//Get list of tasks with larger period than current x
 				for(testFormat j: getEventsLargerPriority(tasks, x )) {
 					demand = (demand + Math.ceil(tick/j.getPeriod())+j.getDuration());
@@ -70,13 +62,10 @@ public class EDPAlgorithm {
 				}				
 
 				tick++;
-				//System.out.println(" Supply: "+supply+"   Demand: "+demand+" ");
 			}
 			
 			if (responseTime>x.getDeadline()) {
 				result.setResponseTime(responseTime);
-				//System.out.print("Deadline exceeded: Response Time:"+responseTime+" Deadline:"+x.getDeadline());
-				//System.out.println("\t Demand: "+(supply-demand));
 				return result;
 			}		
 		}

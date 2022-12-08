@@ -14,9 +14,7 @@ public class main {
 	public static boolean disablePrints = true;
 
 	public static void main(String[] args) throws Exception {
-		testReliability(
-				"test_separation\\inf_30_60\\taskset__1643188356-a_0.3-b_0.6-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv",
-				10);
+		testReliability("test_separation\\inf_50_20\\taskset__1643188484-a_0.5-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv",10);
 	}
 
 	public static double[] runAlgorithm(String filepath) throws Exception {
@@ -52,8 +50,6 @@ public class main {
 		int totalIdlePeriod = EDFoutput[2];
 		System.out.println("Minimum idle period: " + minIdlePeriod);
 		System.out.println("Total idle period: " + totalIdlePeriod);
-		// System.exit(0);
-
 		// Initialize the optimizatino algorithm with max required time for time tasks.
 		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, calculateDemand(timeTasks), timeTasks);
 
@@ -63,19 +59,9 @@ public class main {
 				.findNumberPollingServers(eventTasks);
 
 		// Sets the number of polling servers to use in the optimization algorithm
-		// System.out.println("Number of polling servers:
-		// "+initialPollingServerPartitions.size());
 		optimizeAlgo.setNumberPollingServers(initialPollingServerPartitions.size());
-		// calculateDemand(timeTasks);
 
 		ArrayList<ArrayList<testFormat>> optimalPartitions = initialPollingServerPartitions;
-
-		// Finds optimal partitions based on the number of polling servers and the
-		// initial partitions. Uses simulated annealing, with start temperature of 10000
-		// and rate of 0.99
-		// ArrayList<ArrayList<testFormat>> optimalPartitions =
-		// optimizeAlgo.findOptimalPartitions(initialPollingServerPartitions, 1000,
-		// 0.99);
 
 		// Finds optimal parameters for each polling server, given the optimal
 		// partitions
@@ -90,82 +76,6 @@ public class main {
 		// Runs the EDF algorithm for a final time, using the initial time tasks as well
 		// as the added polling servers with their optimal parameters.
 		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
-
-		// If the optimized parameters result in an unscheduable set of tasks, go back
-		// and use the initial paramters, which we know works
-
-		/*
-		 * System.out.println("Global parameters: "); for(int i=0;
-		 * i<optimalPartitions.size(); i++) { for(int j=0;
-		 * j<optimizeAlgo.getGlobalTrueParameters().get(i).size(); j++) {
-		 * System.out.print(optimizeAlgo.getGlobalTrueParameters().get(i).get(j)[0]+" "
-		 * +optimizeAlgo.getGlobalTrueParameters().get(i).get(j)[1]+" "+optimizeAlgo.
-		 * getGlobalTrueParameters().get(i).get(j)[2]); } System.out.println(""); }
-		 */
-
-		/*
-		
-		int counter = 100;
-		while (counter > 0) {
-			// Try a small change to the parameters to allow them to be scheduled
-
-			optimalParameters = optimizeAlgo.redo2(optimalParameters, optimalPartitions, eventTasks, timeTasks, currentUtilization);
-			ArrayList<testFormat> safeTimeTasks = optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
-
-			System.out.println("Re-trying with parameters: ");
-			for (int j = 0; j < optimalPartitions.size(); j++) {
-					System.out.print(optimalParameters[j][0] + " "
-							+ optimalParameters[j][1] + " "
-							+ optimalParameters[j][2]+"\t");
-			}
-
-			System.out.println("Utilization:" + optimizeAlgo.calculateUtilization(finalTimeTasks));
-
-			if (optimizeAlgo.calculateUtilization(finalTimeTasks) < currentUtilization) {
-				currentUtilization = optimizeAlgo.calculateUtilization(finalTimeTasks);
-				EDFoutput = runEDF.algorithm(safeTimeTasks, disablePrints);
-
-				if (EDFoutput != null) {
-					break;
-				} else {
-					continue;
-				}
-			}
-
-			counter = counter - 1;
-			if (counter == 0) {
-				throw new Exception("A feasible solution could not be found");
-			}
-
-			/*
-			 * 
-			 * System.out.println(" Re-trying with new parameters: "); for (int i = 0; i <
-			 * optimalPartitions.size(); i++) { int size =
-			 * optimizeAlgo.getGlobalTrueParameters().get(i).size();
-			 * System.out.println("Size: "+size);
-			 * 
-			 * int counter = 0;
-			 * 
-			 * if (staticCounter >= size) { counter = size - 1; } else { counter =
-			 * staticCounter; }
-			 * 
-			 * System.out.println("Counter: "+counter);
-			 * 
-			 * optimalParameters[0][i] =
-			 * optimizeAlgo.getGlobalTrueParameters().get(i).get(counter)[0];
-			 * optimalParameters[1][i] =
-			 * optimizeAlgo.getGlobalTrueParameters().get(i).get(counter)[1];
-			 * optimalParameters[2][i] =
-			 * optimizeAlgo.getGlobalTrueParameters().get(i).get(counter)[2];
-			 * System.out.print("New parameters for polling server "+i+" : "
-			 * +optimalParameters[0][i]+" "+optimalParameters[1][i]+" "+optimalParameters[2]
-			 * [i]+"\t"); } System.out.println(""); ArrayList<testFormat> safeTimeTasks =
-			 * optimizeAlgo.createPollingServerTasks(timeTasks, optimalParameters);
-			 * EDFoutput = runEDF.algorithm(safeTimeTasks, disablePrints);
-			 * System.out.println("Utilization:" +
-			 * optimizeAlgo.calculateUtilization(finalTimeTasks));
-			 * 
-			 */
 		
 		int count = 1;
 		while(EDFoutput == null) {
@@ -173,12 +83,7 @@ public class main {
 			
 			ArrayList<testFormat> timeTasksCopy2 = new ArrayList<testFormat>();
 			
-			//System.out.println("TimeTasksSize: "+timeTasks.size());
-			//System.out.println("TimeTasksCopySize: "+timeTasksCopy.size());
-			//System.out.println("TimeTasksCopy2Size: "+timeTasksCopy2.size());
-			
 			for (int j = 0; j < timeTasksCopy.size(); j++) {
-				//System.out.println("J: "+j);
 				timeTasksCopy2.add(timeTasksCopy.get(j).clone());
 			}
 			
@@ -358,8 +263,6 @@ public class main {
 							+ timeTasks.get(j).getDuration();
 				}
 			}
-			// System.out.println("Demand at "+period+":
-			// "+periodicDemands[((period-1000)/1000)-1]);
 		}
 
 		int[] result = new int[12];
