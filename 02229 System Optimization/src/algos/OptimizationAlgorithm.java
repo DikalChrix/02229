@@ -267,7 +267,6 @@ public class OptimizationAlgorithm {
 			// Inner function; generates solution for a single polling server
 			public int[] findInitialSolution(ArrayList<testFormat> eventTasks, int counter) {
 	
-				int workingWCRT = Integer.MAX_VALUE;
 				EDPAlgorithm runEDP = new EDPAlgorithm();
 				int[] bestParameters = new int[3];
 	
@@ -278,10 +277,9 @@ public class OptimizationAlgorithm {
 					for (int i = 0; i < staticParameters; i++) {
 						EDPTuple testResult = runEDP.algorithm(i, staticParameters, staticParameters, eventTasks);
 	
-						if (workingWCRT > testResult.getResponseTime() && testResult.isResult()) {
+						if ( testResult.isResult()) {
 	
 							if (counter == 0) {
-								workingWCRT = testResult.getResponseTime();
 								bestParameters[0] = i;
 								bestParameters[1] = staticParameters;
 								bestParameters[2] = staticParameters;
