@@ -18,7 +18,7 @@ public class OptimizationAlgorithm {
 	private int numberPollingServers;
 	private int[] demands;
 	private int[][] allParameters;
-	ArrayList<ArrayList<int[]>> acceptableParameters = new ArrayList<ArrayList<int[]>>();
+	ArrayList<ArrayList<int[]>> foundParameters = new ArrayList<ArrayList<int[]>>();
 	private double utilizationTimeTasks;
 
 	// Creates an instance of the optimization class and sets some of the global parameters
@@ -207,7 +207,7 @@ public class OptimizationAlgorithm {
 
 		}
 
-		if (checkParameterDemand(allParameters, demands)) {
+		if (checkDemandConstraint(allParameters, demands)) {
 			System.out.println("Initial solution should work");
 		}
 
@@ -245,7 +245,7 @@ public class OptimizationAlgorithm {
 				}
 			}
 	
-			while (!checkParameterDemand(testInitialParameters, demands)) {
+			while (!checkDemandConstraint(testInitialParameters, demands)) {
 				for (int i = 0; i < numberPollingServers; i++) {
 					int[] result = findInitialSolution(partitions.get(i), counter);
 					testInitialParameters[0][i] = result[0];
@@ -326,6 +326,7 @@ public class OptimizationAlgorithm {
 				ArrayList<int[]> acceptableParametersThis = new ArrayList<int[]>();
 				acceptableParametersThis.add(bestParameters);
 
+				System.out.println("Simulated Annealing Started");
 				System.out.println("Initial paramters: " + bestParameters[0] + " " + bestParameters[1] + " " + bestParameters[2]
 						+ " Initial WCRT: " + bestWCRT);
 
@@ -357,8 +358,7 @@ public class OptimizationAlgorithm {
 							bestParameters = currentParameters;
 							bestWCRT = currentWCRT;
 							System.out.println("Current best, correct Response time: " + bestWCRT + " with parameters: "
-									+ bestParameters[0] + " " + bestParameters[1] + " " + bestParameters[2] + " "
-									+ checkParameterConstraints(currentParameters));
+									+ bestParameters[0] + " " + bestParameters[1] + " " + bestParameters[2]);
 						}
 
 					}
@@ -380,7 +380,7 @@ public class OptimizationAlgorithm {
 				System.out.println("Current best, correct Response time: " + bestWCRT + " with parameters: " + bestParameters[0]
 						+ " " + bestParameters[1] + " " + bestParameters[2]);
 
-				acceptableParameters.add(acceptableParametersThis);
+				foundParameters.add(acceptableParametersThis);
 
 				return bestParameters;
 
@@ -457,9 +457,9 @@ public class OptimizationAlgorithm {
 			public int[][] findBestWorkingSolutions(ArrayList<ArrayList<testFormat>> partitions,
 					ArrayList<testFormat> eventTasks) {
 
-				int[] acceptableParametersSizes = new int[numberPollingServers];
+				int[] foundParametersSizes = new int[numberPollingServers];
 
-				ArrayList<ArrayList<int[]>> trueParameters = new ArrayList<ArrayList<int[]>>();
+				ArrayList<ArrayList<int[]>> filteredParameters = new ArrayList<ArrayList<int[]>>();
 
 				int max = 0;
 
@@ -469,29 +469,29 @@ public class OptimizationAlgorithm {
 				for (int i = 0; i < numberPollingServers; i++) {
 					
 					// Remove duplicates
-					for (int j = 0; j < acceptableParameters.get(i).size(); j++) {
-						int[] temp = acceptableParameters.get(i).get(j);
-						for (int k = j + 1; k < acceptableParameters.get(i).size(); k++) {
-							if (temp == acceptableParameters.get(i).get(k)) {
-								acceptableParameters.get(i).remove(k);
+					for (int j = 0; j < foundParameters.get(i).size(); j++) {
+						int[] temp = foundParameters.get(i).get(j);
+						for (int k = j + 1; k < foundParameters.get(i).size(); k++) {
+							if (temp == foundParameters.get(i).get(k)) {
+								foundParameters.get(i).remove(k);
 							}
 						}
 					}
 
 					// Create array for parameters to pass onto mutation algorithm
-					trueParameters.add(new ArrayList<int[]>());
-					acceptableParametersSizes[i] = acceptableParameters.get(i).size();
-					if (acceptableParametersSizes[i] > max) {
-						max = acceptableParametersSizes[i];
+					filteredParameters.add(new ArrayList<int[]>());
+					foundParametersSizes[i] = foundParameters.get(i).size();
+					if (foundParametersSizes[i] > max) {
+						max = foundParametersSizes[i];
 					}
 
 					int trueParameterArray[] = new int[3];
 					for (int j = 0; j < 3; j++) {
-						currentParameters[j][i] = acceptableParameters.get(i).get(acceptableParametersSizes[i] - 1)[j];
+						currentParameters[j][i] = foundParameters.get(i).get(foundParametersSizes[i] - 1)[j];
 
 						trueParameterArray[j] = currentParameters[j][i];
 					}
-					trueParameters.get(i).add(trueParameterArray);
+					filteredParameters.get(i).add(trueParameterArray);
 				}
 
 				  // Set best parameters
@@ -503,7 +503,7 @@ public class OptimizationAlgorithm {
 				 
 				// Reverse the lists of found parameters
 				for (int i = 0; i < numberPollingServers; i++) {
-					Collections.reverse(acceptableParameters.get(i));
+					Collections.reverse(foundParameters.get(i));
 				}
 
 
@@ -515,17 +515,17 @@ public class OptimizationAlgorithm {
 					for (int j = 0; j < numberPollingServers; j++) {
 
 						// Change one set of parameters for j'th polling server
-						if (acceptableParametersSizes[j] > i) {
+						if (foundParametersSizes[j] > i) {
 							for (int k = 0; k < 3; k++) {
-								currentParameters[k][j] = acceptableParameters.get(j).get(i)[k];
+								currentParameters[k][j] = foundParameters.get(j).get(i)[k];
 							}
 						} else {
 							continue;
 						}
 
-						if (checkParameterDemand(currentParameters, demands) && checkUtilizationConstraint(currentParameters)) {
+						if (checkDemandConstraint(currentParameters, demands) && checkUtilizationConstraint(currentParameters)) {
 							int[] WCRTs = optimalPollingServerRun(partitions, currentParameters);
-							double currentWCRT = finalEventWCRT(WCRTs, partitions, eventTasks);
+							double currentWCRT = calculateWeightedWCRT(WCRTs, partitions, eventTasks);
 
 							// Add the parameters for pollingserver j that to the trueParmaters arraylist for
 							// later use in mutation algorithm (Important we only have correct solutions)
@@ -533,7 +533,7 @@ public class OptimizationAlgorithm {
 							for (int h = 0; h < 3; h++) {
 								trueParameterArray[h] = currentParameters[h][j];
 							}
-							trueParameters.get(j).add(trueParameterArray);
+							filteredParameters.get(j).add(trueParameterArray);
 
 							if (currentWCRT < bestWCRT) {
 								for (int h = 0; h < numberPollingServers; h++) {
@@ -556,10 +556,10 @@ public class OptimizationAlgorithm {
 				}
 
 				// Do mutation
-				int[][] mutatedParameters = mutationAlgorithm(trueParameters, acceptableParametersSizes, bestParameters,
+				int[][] mutatedParameters = mutationAlgorithm(filteredParameters, bestParameters,
 						bestWCRT, partitions, eventTasks);
 				int[] mutatedWCRTs = optimalPollingServerRun(partitions, mutatedParameters);
-				double mutatedWCRT = finalEventWCRT(mutatedWCRTs, partitions, eventTasks);
+				double mutatedWCRT = calculateWeightedWCRT(mutatedWCRTs, partitions, eventTasks);
 
 				// Do finetuning using mutated parameters and WCRT 
 				return finetuning(mutatedParameters, (int) mutatedWCRT, partitions, eventTasks);
@@ -567,7 +567,7 @@ public class OptimizationAlgorithm {
 			}
 				
 				// Function to perform mutation
-				public int[][] mutationAlgorithm(ArrayList<ArrayList<int[]>> allParameters, int[] acceptableParametersSizes,
+				public int[][] mutationAlgorithm(ArrayList<ArrayList<int[]>> filteredParameters,
 						int[][] bestParameters, double bestWCRT, ArrayList<ArrayList<testFormat>> partitions,
 						ArrayList<testFormat> eventTasks) {
 	
@@ -581,26 +581,26 @@ public class OptimizationAlgorithm {
 	
 						for (int j = 0; j < numberPollingServers; j++) {
 	
-							if (allParameters.get(j).size() == 1) {
+							if (filteredParameters.get(j).size() == 1) {
 								continue;
 							}
 	
 							// Pick at random two parameters from the solution space from the specific
 							// polling server
 							Random rand = new Random();
-							int firstPick = (int) (rand.nextInt(allParameters.get(j).size()));
-							int secondPick = (int) (rand.nextInt(allParameters.get(j).size()));
+							int firstPick = (int) (rand.nextInt(filteredParameters.get(j).size()));
+							int secondPick = (int) (rand.nextInt(filteredParameters.get(j).size()));
 	
 							// If the same index is chosen, ensure that a different one is chosen
 							while (firstPick == secondPick) {
 
-								secondPick = (int) (rand.nextInt(allParameters.get(j).size()));
+								secondPick = (int) (rand.nextInt(filteredParameters.get(j).size()));
 								;
 							}
 	
 							// Create mutations and check the two new solutions
-							ArrayList<int[]> mutatedParameters = mutateParameters(allParameters.get(j).get(firstPick),
-									allParameters.get(j).get(secondPick));
+							ArrayList<int[]> mutatedParameters = mutateParameters(filteredParameters.get(j).get(firstPick),
+									filteredParameters.get(j).get(secondPick));
 
 							// Test both childs
 							for (int h = 0; h < 2; h++) {
@@ -611,19 +611,17 @@ public class OptimizationAlgorithm {
 									currentParameters[2][k] = bestParameters[2][k];
 								}
 	
-								for (int k = 0; k < 3; k++) {
-									currentParameters[0][j] = mutatedParameters.get(h)[0];
-									currentParameters[1][j] = mutatedParameters.get(h)[1];
-									currentParameters[2][j] = mutatedParameters.get(h)[2];
-								}
+								currentParameters[0][j] = mutatedParameters.get(h)[0];
+								currentParameters[1][j] = mutatedParameters.get(h)[1];
+								currentParameters[2][j] = mutatedParameters.get(h)[2];
 	
 								EDPAlgorithm runEDP = new EDPAlgorithm();
 								EDPTuple EDPresult = runEDP.algorithm(currentParameters[0][j], currentParameters[1][j],
 										currentParameters[2][j], partitions.get(j));
 								
-								if (checkParameterDemand(currentParameters, demands) && EDPresult.isResult()) {
+								if (checkDemandConstraint(currentParameters, demands) && EDPresult.isResult()) {
 									int[] WCRTs = optimalPollingServerRun(partitions, currentParameters);
-									currentWCRT = finalEventWCRT(WCRTs, partitions, eventTasks);
+									currentWCRT = calculateWeightedWCRT(WCRTs, partitions, eventTasks);
 
 									if (currentWCRT < bestWCRT) {
 										for (int k = 0; k < numberPollingServers; k++) {
@@ -702,7 +700,7 @@ public class OptimizationAlgorithm {
 					}
 				
 				// Function for performing last-step finetuning of the parameters
-				public int[][] finetuning(int[][] parameters, int bestWCRT, ArrayList<ArrayList<testFormat>> partitions,
+				public int[][] finetuning(int[][] currentParameters, int bestWCRT, ArrayList<ArrayList<testFormat>> partitions,
 						ArrayList<testFormat> eventTasks) {
 	
 					System.out.println("Finetuning started");
@@ -710,9 +708,9 @@ public class OptimizationAlgorithm {
 					int[][] bestParameters = new int[3][numberPollingServers];
 	
 					for (int i = 0; i < numberPollingServers; i++) {
-						bestParameters[0][i] = parameters[0][i];
-						bestParameters[1][i] = parameters[1][i];
-						bestParameters[2][i] = parameters[2][i];
+						bestParameters[0][i] = currentParameters[0][i];
+						bestParameters[1][i] = currentParameters[1][i];
+						bestParameters[2][i] = currentParameters[2][i];
 					}
 	
 					int currentWCRT = 0;
@@ -720,42 +718,42 @@ public class OptimizationAlgorithm {
 					for (int i = 0; i < 10000; i++) {
 	
 						Random rand = new Random();
-						int pollingServer = (int) (rand.nextInt(parameters[0].length));
+						int pollingServer = (int) (rand.nextInt(currentParameters[0].length));
 						int choice = (int) (rand.nextInt(3));
 						int operation = (int) (rand.nextInt(2));
 						EDPAlgorithm runEDP = new EDPAlgorithm();
 	
 						// Test if result still satisfies constraint after incremention/decremention 
 						if (operation == 0) {
-							parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
-							int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
-									parameters[2][pollingServer] };
+							currentParameters[choice][pollingServer] = currentParameters[choice][pollingServer] - 1;
+							int[] temp = { currentParameters[0][pollingServer], currentParameters[1][pollingServer],
+									currentParameters[2][pollingServer] };
 							if (!checkParameterConstraints(temp)
 									|| !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
-								parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
+								currentParameters[choice][pollingServer] = currentParameters[choice][pollingServer] + 1;
 								continue;
 							}
 						} else {
-							parameters[choice][pollingServer] = parameters[choice][pollingServer] + 1;
-							int[] temp = { parameters[0][pollingServer], parameters[1][pollingServer],
-									parameters[2][pollingServer] };
+							currentParameters[choice][pollingServer] = currentParameters[choice][pollingServer] + 1;
+							int[] temp = { currentParameters[0][pollingServer], currentParameters[1][pollingServer],
+									currentParameters[2][pollingServer] };
 							if (!checkParameterConstraints(temp)
 									|| !runEDP.algorithm(temp[0], temp[1], temp[2], partitions.get(pollingServer)).isResult()) {
-								parameters[choice][pollingServer] = parameters[choice][pollingServer] - 1;
+								currentParameters[choice][pollingServer] = currentParameters[choice][pollingServer] - 1;
 								continue;
 							}
 						}
 	
-						if (checkParameterDemand(parameters, demands)) {
-							int[] WCRTs = optimalPollingServerRun(partitions, parameters);
-							currentWCRT = (int) finalEventWCRT(WCRTs, partitions, eventTasks);
+						if (checkDemandConstraint(currentParameters, demands)) {
+							int[] WCRTs = optimalPollingServerRun(partitions, currentParameters);
+							currentWCRT = (int) calculateWeightedWCRT(WCRTs, partitions, eventTasks);
 	
 							if (currentWCRT < bestWCRT) {
 								System.out.println(" Best found parameters: " + currentWCRT + "");
 								for (int j = 0; j < numberPollingServers; j++) {
-									bestParameters[0][j] = parameters[0][j];
-									bestParameters[1][j] = parameters[1][j];
-									bestParameters[2][j] = parameters[2][j];
+									bestParameters[0][j] = currentParameters[0][j];
+									bestParameters[1][j] = currentParameters[1][j];
+									bestParameters[2][j] = currentParameters[2][j];
 									System.out.print(
 											bestParameters[0][j] + " " + bestParameters[1][j] + " " + bestParameters[2][j] + " \t");
 								}
@@ -780,21 +778,21 @@ public class OptimizationAlgorithm {
 			
 	// Functions for checking constraints
 				
-	public boolean checkParameterDemand(int[][] parameters, int[] demands) {
+	public boolean checkDemandConstraint(int[][] parameters, int[] demands) {
 
-		int pollingBudget1000 = 0;
+		int totalBudget1000 = 0;
 
 		// Figure out the 1000-tick demand by the total budget of the polling tasks
-		for (int i = 0; i < parameters[0].length; i++) {
+		for (int i = 0; i < numberPollingServers; i++) {
 			double multiple = 1000 / parameters[1][i];
 			int budget1000 = (int) Math.ceil(parameters[0][i] * multiple);
-			pollingBudget1000 = pollingBudget1000 + budget1000;
+			totalBudget1000 = totalBudget1000 + budget1000;
 		}
 
 		// Check if adding polling demand exceeds demand in any run of the EDF-algorithm
 		for (int i = 1; i < 13; i++) {
 
-			if (demands[i - 1] + pollingBudget1000 * i > i * 1000) {
+			if (demands[i - 1] + totalBudget1000 * i > i * 1000) {
 				return false;
 			}
 		}
@@ -893,7 +891,7 @@ public class OptimizationAlgorithm {
 	}
 
 	// Main function to get the average WCRT of all polling servers
-	public double finalEventWCRT(int[] eventTasksWCRTs, ArrayList<ArrayList<testFormat>> partitions,
+	public double calculateWeightedWCRT(int[] eventTasksWCRTs, ArrayList<ArrayList<testFormat>> partitions,
 			ArrayList<testFormat> eventTasks) { // We are taking the average
 
 		double result = 0;

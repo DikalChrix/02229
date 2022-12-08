@@ -40,17 +40,7 @@ public class main {
 			timeTasksCopy.add(timeTasks.get(i).clone());
 		}
 
-		// Runs the EDF algorithm to schedule time tasks. Returns the minimum idle
-		// period
-		// per 1000 ticks (Which is min. time we can run polling servers each 1000 tick)
 		int[] EDFoutput = new int[3];
-		EDFoutput = runEDF.algorithm(timeTasks, disablePrints);
-		int minIdlePeriod = EDFoutput[0];
-		int EDFWCRT = EDFoutput[1];
-		int totalIdlePeriod = EDFoutput[2];
-		System.out.println("Minimum idle period: " + minIdlePeriod);
-		System.out.println("Total idle period: " + totalIdlePeriod);
-		// Initialize the optimizatino algorithm with max required time for time tasks.
 		OptimizationAlgorithm optimizeAlgo = new OptimizationAlgorithm(0, calculateDemand(timeTasks), timeTasks);
 
 		// Finds optimal number of polling servers, returns initial partitions of the
@@ -115,7 +105,7 @@ public class main {
 		
 		
 		System.out.println("Utilization:" + optimizeAlgo.calculateUtilization(finalTimeTasks));
-		EDFWCRT = EDFoutput[1];
+		int EDFWCRT = EDFoutput[1];
 		System.out.println("Final WCRT: " + EDFWCRT);
 
 		double utilization = optimizeAlgo.calculateUtilization(finalTimeTasks);
