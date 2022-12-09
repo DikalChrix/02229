@@ -18,12 +18,12 @@ def add_tuples(df):
         task = []
         if df['type'][ind] != "ET":
             for i in range(int(lcm/df['period'][ind])):
-                task.append((i*df['deadline'][ind],df['duration'][ind],df['priority'][ind],(1+i)*df['deadline'][ind]))
+                task.append((i*df['deadline'][ind],df['duration'][ind],(1+i)*df['deadline'][ind],df['priority'][ind]))
         else:
             #calculate MIT and add ET task
             for i in range(int(lcm/df['period'][ind])):
                 if i*df['period'][ind]+df['deadline'][ind]<lcm:
-                    task.append((i*df['period'][ind],df['duration'][ind],df['priority'][ind],i*df['period'][ind]+df['deadline'][ind]))
+                    task.append((i*df['period'][ind],df['duration'][ind],i*df['period'][ind]+df['deadline'][ind],df['priority'][ind]))
             #print(f"taskname {df['name'][ind]:<6} period/deadline: {df['period'][ind]} / {df['deadline'][ind]}")
         task_data.append(task)
     return task_data
@@ -50,4 +50,5 @@ def load_data(file):
     
 	
 if __name__ == '__main__':
-    cpDatahandler()
+    print("main running")
+    CPDataHandler('dataBase\\inf_70_20\\taskset__1643188613-a_0.7-b_0.2-n_30-m_20-d_unif-p_2000-q_4000-g_1000-t_5__0__tsk.csv')
